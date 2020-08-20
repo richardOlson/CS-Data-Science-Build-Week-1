@@ -14,7 +14,7 @@ class DBSCAN:
         self.label = None # this will be the labels that are given to the data
         self.core_samples_indices = None # will take in a matrix with the shape of rows with number of samples
                          # columns with the number of features
-        self.__clusters = {} # is set to be a dictionary where the value will be a dictionary
+        self.__groups = {} # is set to be a dictionary where the value will be a dictionary
                              # of each different cluster.  The first cluster will be the outliers
         self.components = None # This will end up being a numpy nd array that will have all the cores
 
@@ -71,36 +71,44 @@ class DBSCAN:
         """
         
         # points that are in the radius
-        thePoints = []
-        labels_points_previous = []
+        within_radius = []
+        groups_points_previous = set() # using a set to hold the groups seen 
         # will be looping through the data looking at each 
         # point and checking the distance. To see if less than or equal to eps
         for i in range(data.shape[0]):
             if np.linalg.norm(point - data[i]) <= self.eps: 
                 # need to count number of points in the required distance
-                thePoints.append(i)
-                # adding the lables of the points 
-                if self.__clusters != None:
+                within_radius.append(i)
+                # putting the points into a group 
+                if self.__groups != None:
                     # will loop through the dictionaries
-                    for key in self.__clusters:
-                        val = self.__clusters[key].get(i, -1)
+                    for key in self.__groups:
+                        val = self.__groups[key].get(i, -1)
                         if val != -1:
                             # this is adding the label to the list
                             # if the index of the point of the data if found in the 
-        ## TODO fix the add for labels                    # dictionary
+                            # dictionary
                             # this if statement is to check if the label is 
                             # already there with the same points if it is 
-                            labels_points_previous.append(key)
+                            groups_points_previous.add(key)
                         else:
-                            labels_points_previous.append(-1)
+                            groups_points_previous.add(-1) # If all the points have just
+             #TODO   #else:
+                    # if in here means the dictionary is empty and there are no groups that 
+                    # have been made and therefore this will be first group
+                 #   groups_points_previous.add(-1) # -1 means no group is found
+
         # after the full loop, Will then check to see if we have enough to 
         # label this point as a core point and then begin a label of the cluster
-        if len(thePoints) >= self.minNum:
-            # calling the method that will do the labeling and the 
-            # assigning of the corepoint
+        if len(within_radius) >= self.minNum:
+            # calling the method that will put the point in the array 
+            # that contains the corepoints
             self.__add_core_point(data, point_index)
-        # this method will do the function of labeling
-        self.__label_points(thePoints)
+
+        # doing the grouping of the points putting in groups 
+        # or possibly merging the groups
+        self.__grouping(within_radius, groups_points_previous)
+
 
 
 
@@ -120,9 +128,12 @@ class DBSCAN:
         else:
             raise Exception("Wrong components type")
 
-    def __label_points(thePoints, labels_of_points_prev, ):
+
+
+    def __grouping(self, thePoints,  groups_associated):
         """
-        This is the method that will label the points with a certain label
-        This method will check to see if any of the points have been used 
-        previously.  
+        This is the method that will put the points into groups.
+        The groups are other points that have a distance connection to them.
+          
         """
+        # checking to see the length of the set
