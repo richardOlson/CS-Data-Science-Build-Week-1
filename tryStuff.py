@@ -6,13 +6,17 @@ import numpy as np
 arr = np.array([[1,2,3], [4,5,6], [7,8,9], [10, 11, 12]])
 
 
-print(arr.shape) # the rows is the fist part of the tuple
-# now trying to loop through the aray
-width = arr.shape
-print(type(width))
-print("This is the width ", width[0])
+theSet = {1,2,3,4,5}
 
-for i in range(arr.shape[0]):
-    # print out the first row
-   print("This is the fist line")
-   print(arr[i])
+# removing something from the set
+theSet.discard(1)
+print(theSet)
+theSet.discard(2)
+theSet.discard(3)
+theSet.discard(4)
+theSet.discard(5)
+
+if not theSet:
+    print("The set is empty")
+else:
+    print("The set is not empty")
