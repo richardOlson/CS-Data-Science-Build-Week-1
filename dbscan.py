@@ -74,6 +74,7 @@ class DBSCAN:
         It will check the distance
         """
         
+        
         # points that are in the radius
         within_radius = []
         groups_points_previous = set() # using a set to hold the groups seen 
@@ -82,7 +83,8 @@ class DBSCAN:
         for i in range(data.shape[0]):
             if np.linalg.norm(point - data[i]) <= self.eps: 
                 # need to count number of points in the required distance
-                within_radius.append(i)
+                #within_radius.append(i)
+                
                 # putting the points into a group 
                 if self.__groups != None:
                     # will loop through the dictionaries
@@ -95,12 +97,16 @@ class DBSCAN:
                             # this if statement is to check if the label is 
                             # already there with the same points if it is 
                             groups_points_previous.add(key)
+                            # putting a tuple in the list
+                            within_radius.append((i, key))
                         else:
                             groups_points_previous.add(-1) # means this point is not asscociated with any group
+                            within_radius.append((i, -1))
                 else:
                     # if in here means the dictionary is empty and there are no groups that 
                     # have been made and therefore this will be first group
                     groups_points_previous.add(-1) # point is associated with no group 
+                    within_radius.append((i,-1))
 
         # after the full loop, Will then check to see if we have enough to 
         # label this point as a core point and then begin a label of the cluster
@@ -150,7 +156,7 @@ class DBSCAN:
             
             self.__groups[1] = {}  # making the first dictionary group and will have the key of 1
             for i in range(len(thePoints)):
-                self.__groups[1][thePoints[i]] = thePoints[i]
+                self.__groups[1][thePoints[i][0]] = thePoints[i][0] #TODO
             return
 
         # checking if we need to make a totally new group
@@ -165,23 +171,30 @@ class DBSCAN:
             self.__groups[val] = {}
             # adding the values to the new group
             for i in range(len(thePoints)):
-                self.__groups[val][thePoints[i]] = thePoints[i]
+                self.__groups[val][thePoints[i][0]] = thePoints[i][0]
             return
 
-        # looping throug and finding the smallest key for the dictionary
-        
-        val = 10000000
+        # looping through and finding the dictionary that is the largest
+        # so that we can merge into it (keeping the largest of the dictionaries).
+        val = 0
+        numPts = 0
         for key in groups_associated:
-            if key < val and key != -1:
-                val = key
+            if key != -1: # Won't look into the key with neg 1 becuse there is no
+                          # dictionary with this key 
+
+                if len(self.__groups[key]) > numPts:
+                    val = key
+                    numPts = len(self.__groups[key])
         
         # removing the val from the set
         groups_associated.discard(val)
 
+        # if looking in here, all the points will need to be
+        # assigned to the val group because it is the only one
         if not groups_associated:
             # all the points will need to be grouped to the val
             for i in range(len(thePoints)):
-                self.__groups[val] = thePoints[i]
+                self.__groups[val] = thePoints[i][0]
             return 
         else:
             self.__merge(val, groups_associated, thePoints)
@@ -194,11 +207,23 @@ class DBSCAN:
         # Getting the lowest number group that is in the dictionary
 
 
-    def __merge(self, merge_to_dict_key, merge_from_set, thPoints_index ):
+    def __merge(self, merge_to_dict_key, merge_from_set, thePoints_index ):
         """
         This is the method that will do the merging of different groups together.
         The calling of this method means that more than one group needs to be grouped/merged
         """
-        # TODO need to work on this
-        pass
-        
+        # Looping through the merge from set
+        for i in range(len(merge_from_set)):
+            # Will merge the other dictionaries to the biggest dictionary
+            self.__groups[merge_to_dict_key].update(self.__groups[merge_from_set[i]])
+            # removing the dictionary now that it has been merged
+            self.__groups.pop(merge_from_set[i])
+        # then doing a for loop that will add the points in thePoints_index that have
+        # -1 as the point they are linked to
+        for i in range(len(thePoints_index)):
+            if thePoints_index[i][1] == -1:
+                # add the point to the dictionary
+                self.__groups[merge_to_dict_key][thePoints_index[i][0]] = thePoints_index[i[0]]
+
+    
+

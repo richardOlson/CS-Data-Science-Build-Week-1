@@ -20,3 +20,19 @@ if not theSet:
     print("The set is empty")
 else:
     print("The set is not empty")
+
+# trying to merge two different 
+# dictionaries
+
+fisrt = {1:1, 2:2, 3:3}
+second = {4:4, 5:5, 6:6}
+
+fisrt.update(second)
+
+print(fisrt)
+
+
+print(f"This the value of the key 5: {fisrt[5]}")
+
+
+print(f"This is what the second dictionary is {second}")
