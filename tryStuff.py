@@ -36,3 +36,11 @@ print(f"This the value of the key 5: {fisrt[5]}")
 
 
 print(f"This is what the second dictionary is {second}")
+
+# creating a np array
+arr = np.array([1,2,3,4])
+
+arr[1] = 100
+
+print(type(arr))
+print(arr[1])

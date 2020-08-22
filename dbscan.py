@@ -37,7 +37,7 @@ class DBSCAN:
         self.check_dataType(data)
 
         # initializing some of the things that are used for memory
-        self.core_samples_indices = {} # used at the first as a dictionary 
+        self.core_samples_indices = [] # used at the first as a dictionary 
                                        # Will then change it to a ndarray
                                        # when the fit is finished
         self.components = [] # making a temporary list
@@ -52,6 +52,8 @@ class DBSCAN:
                             # core point
             self.__find_core_points(point, data, i) # This will look if this point can be a core
                                                  # point
+                                                 # Through this method we will group the points then
+                                                 # they will be ready for labeling
             
 
         
@@ -74,7 +76,9 @@ class DBSCAN:
         It will check the distance
         """
         
-        
+        # boolean to tell in grouping function that 
+        # this function has a core point
+        hasCorePoint = False
         # points that are in the radius
         within_radius = []
         groups_points_previous = set() # using a set to hold the groups seen 
@@ -89,7 +93,10 @@ class DBSCAN:
                 if self.__groups != None:
                     # will loop through the dictionaries
                     for key in self.__groups:
-                        val = self.__groups[key].get(i, -1)
+                        val = self.__groups[key][0].get(i, -1) # The bracket is because the value is a list 
+                                                               # where the 0 element is a dictionary--group, and 
+                                                               # the second 1 element will contain either 
+                                                               # 1 or a 0.  1 means has core point, 0 no.
                         if val != -1:
                             # this is adding the label to the list
                             # if the index of the point of the data if found in the 
@@ -114,10 +121,11 @@ class DBSCAN:
             # calling the method that will put the point in the array 
             # that contains the corepoints
             self.__add_core_point(data, point_index)
+            hasCorePoint = True
 
         # doing the grouping of the points putting in groups 
         # or possibly merging the groups
-        self.__grouping(within_radius, groups_points_previous)
+        self.__grouping(within_radius, groups_points_previous, hasCorePoint)
 
 
 
@@ -128,8 +136,8 @@ class DBSCAN:
         It will add the index of the core point to the list that 
         will then become the core_samples_indices
         """
-        if isinstance(self.core_samples_indices, dict):
-            self.core_samples_indices[index] = index
+        if isinstance(self.core_samples_indices, list):
+            self.core_samples_indices.append(index)
         else:
             raise Exception("Not a dictionary")
         # Adding the components to the 
@@ -140,12 +148,13 @@ class DBSCAN:
 
 
 
-    def __grouping(self, thePoints,  groups_associated):
+    def __grouping(self, thePoints,  groups_associated, hasCorePoint):
         """
         This is the method that will put the points into groups.
         The groups are other points that have a distance connection to them.
           
         """
+        core = 1 if hasCorePoint else 0
         # if the set only contains -1 : then we need to make a new group.
         # New groups will just have a name --- (key) that is incremented from other keys
 
@@ -154,7 +163,7 @@ class DBSCAN:
             # will loop through the points and add them to the new group
             # groups are dictionary of groups which is also a dictionary.
             
-            self.__groups[1] = {}  # making the first dictionary group and will have the key of 1
+            self.__groups[1] = [{}, core]  # making dictionary group and will have the key of 1 
             for i in range(len(thePoints)):
                 self.__groups[1][thePoints[i][0]] = thePoints[i][0] #TODO
             return
@@ -168,10 +177,10 @@ class DBSCAN:
                 if val < key:
                     val = key
             val +=1
-            self.__groups[val] = {}
+            self.__groups[val] = [{}, core]
             # adding the values to the new group
             for i in range(len(thePoints)):
-                self.__groups[val][thePoints[i][0]] = thePoints[i][0]
+                self.__groups[val][0][thePoints[i][0]] = thePoints[i][0] # putting in dictionary
             return
 
         # looping through and finding the dictionary that is the largest
@@ -182,9 +191,9 @@ class DBSCAN:
             if key != -1: # Won't look into the key with neg 1 becuse there is no
                           # dictionary with this key 
 
-                if len(self.__groups[key]) > numPts:
+                if len(self.__groups[key][0]) > numPts:
                     val = key
-                    numPts = len(self.__groups[key])
+                    numPts = len(self.__groups[key][0])
         
         # removing the val from the set
         groups_associated.discard(val)
@@ -192,12 +201,15 @@ class DBSCAN:
         # if looking in here, all the points will need to be
         # assigned to the val group because it is the only one
         if not groups_associated:
+            isCore = False
             # all the points will need to be grouped to the val
             for i in range(len(thePoints)):
-                self.__groups[val] = thePoints[i][0]
+                self.__groups[val][0] = thePoints[i][0]
+            if core:
+                self.__groups[val][1] = 1 # stating that this group has a core in it and therefore is not outlier 
             return 
         else:
-            self.__merge(val, groups_associated, thePoints)
+            self.__merge(val, groups_associated, thePoints, hasCorePoint)
 
         # if ((-1 in groups_associated and len(groups_associated) ==2) or (len(groups_associated) == 1) ):
         #     # If in here will just group with one group type
@@ -207,15 +219,19 @@ class DBSCAN:
         # Getting the lowest number group that is in the dictionary
 
 
-    def __merge(self, merge_to_dict_key, merge_from_set, thePoints_index ):
+    def __merge(self, merge_to_dict_key, merge_from_set, thePoints_index, hasCorePoint):
         """
         This is the method that will do the merging of different groups together.
         The calling of this method means that more than one group needs to be grouped/merged
         """
+        isCore = False
         # Looping through the merge from set
         for i in range(len(merge_from_set)):
             # Will merge the other dictionaries to the biggest dictionary
-            self.__groups[merge_to_dict_key].update(self.__groups[merge_from_set[i]])
+            self.__groups[merge_to_dict_key][0].update(self.__groups[merge_from_set[i]][0])
+            # checking to see if any of the dictionaries has a core point
+            if self.__groups[merge_from_set[i]][1] == 1:
+                isCore = True
             # removing the dictionary now that it has been merged
             self.__groups.pop(merge_from_set[i])
         # then doing a for loop that will add the points in thePoints_index that have
@@ -224,6 +240,28 @@ class DBSCAN:
             if thePoints_index[i][1] == -1:
                 # add the point to the dictionary
                 self.__groups[merge_to_dict_key][thePoints_index[i][0]] = thePoints_index[i[0]]
+        # setting the group to say it has a core point if the group of points or a merged dictionary 
+        # has a core point
+        if hasCorePoint == True or isCore == True:
+            self.__groups[merge_to_dict_key][1] = 1
 
     
+    # TODO finish this method
+
+    def __labeling(self):
+        """
+        This method will will label the each of the points.
+        If the group does not have a core point in it it will be labeled with a -1.
+        """
+        # will need to loop through the dictionaries.  If they have a core point in them then the 
+        # whole group will be labeled.  It will then move to the next dictionary and check to see if 
+        # it has a core point and if it does it will be labeled also with the next label.(incremented)
+
+        # Looping through the dictionaries
+        for key in self.__groups:
+            # start looking through the core points to see if any of them are in 
+            # the dictionary
+            for i in self.
+            if val != -1: # This means that the key is in 
+
 
