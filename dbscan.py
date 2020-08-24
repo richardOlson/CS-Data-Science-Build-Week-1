@@ -165,11 +165,12 @@ class DBSCAN:
             
             self.__groups[1] = [{}, core]  # making dictionary group and will have the key of 1 
             for i in range(len(thePoints)):
-                self.__groups[1][thePoints[i][0]] = thePoints[i][0] #TODO
+                self.__groups[1][thePoints[i][0]] = thePoints[i][0] # Adding the points to the group
+            #self.__labeling(thePoints, groups_associated, hasCorePoint) # function to label points
             return
 
         # checking if we need to make a totally new group
-        # will have just -1 in the set 
+        # will have just -1 in the set , so all the labels will be just with the group made
         if len(groups_associated) == 1 and -1 in groups_associated:
             # will iterate through the keys of the dictionary and make one larger than it
             val = 0
@@ -181,6 +182,7 @@ class DBSCAN:
             # adding the values to the new group
             for i in range(len(thePoints)):
                 self.__groups[val][0][thePoints[i][0]] = thePoints[i][0] # putting in dictionary
+            #self.__labeling(thePoints, groups_associated, hasCorePoint) # function to label points
             return
 
         # looping through and finding the dictionary that is the largest
@@ -207,6 +209,7 @@ class DBSCAN:
                 self.__groups[val][0] = thePoints[i][0]
             if core:
                 self.__groups[val][1] = 1 # stating that this group has a core in it and therefore is not outlier 
+            self.__labeling(dict_belong_to, thePoints, dicts_come_from=None, hasCorePoint) # function to label points
             return 
         else:
             self.__merge(val, groups_associated, thePoints, hasCorePoint)
@@ -248,7 +251,7 @@ class DBSCAN:
     
     # TODO finish this method
 
-    def __labeling(self):
+    def __labeling(self, dict_belong_to, thePoints, dicts_come_from=None, hasCorePoint):
         """
         This method will will label the each of the points.
         If the group does not have a core point in it it will be labeled with a -1.
