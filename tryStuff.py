@@ -42,5 +42,16 @@ arr = np.array([1,2,3,4])
 
 arr[1] = 100
 
-print(type(arr))
-print(arr[1])
+
+
+class Parent:
+    def fun(self):
+        print("Hi")
+
+class Child(Parent):
+    def fun(self):
+        print("Bye")
+
+p = Parent
+
+p.fun()
