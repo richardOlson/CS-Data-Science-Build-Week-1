@@ -5,13 +5,13 @@ import numpy as np
 
 
 
-class DBSCAN:
+class MY_DBSCAN:
     
     def __init__(self, eps, minNum):
 
         self.eps = eps
         self.minNum = minNum
-        self.label = None # this will be the labels that are given to the data
+        self.label = [] # this will be the labels that are given to the data
 
         self.core_samples_indices = None # Become a ndarray that will have the indexes of the core 
                                          # that are found in the data
@@ -35,14 +35,14 @@ class DBSCAN:
         """
         # check to see if the data is okay to be used in the function
         self.check_dataType(data)
-
+        
         # initializing some of the things that are used for memory
         self.core_samples_indices = [] # used at the first as a dictionary 
                                        # Will then change it to a ndarray
-                                       # when the fit is finished
-        self.components = [] # making a temporary list
-        self.label = np.full(-1,data.shape[0]) # filling the label as all 
-                                               # with if is outlier
+                                  # when the fit is finished
+        self.components = [] # making a temporary listipdb.set_trace()
+        
+        self.label = self.__return_label_arr(data=data)
 
         # first will loop through the data begining at one point and then 
         for i in range(data.shape[0]):
@@ -149,24 +149,25 @@ class DBSCAN:
 
 
     def __grouping(self, thePoints,  groups_associated, hasCorePoint):
-        """
-        This is the method that will put the points into groups.
-        The groups are other points that have a distance connection to them.
+        
+    #     """
+    #     This is the method that will put the points into groups.
+    #     The groups are other points that have a distance connection to them.
           
-        """
+    #     """
         core = 1 if hasCorePoint else 0
-        # if the set only contains -1 : then we need to make a new group.
-        # New groups will just have a name --- (key) that is incremented from other keys
+    #     # if the set only contains -1 : then we need to make a new group.
+    #     # New groups will just have a name --- (key) that is incremented from other keys
 
-        # First need to check to see if the __groups is empty
+    #     # First need to check to see if the __groups is empty
         if not self.__groups: # should only get in here if there is only the -1 in set
-            # will loop through the points and add them to the new group
-            # groups are dictionary of groups which is also a dictionary.
+    #         # will loop through the points and add them to the new group
+    #         # groups are dictionary of groups which is also a dictionary.
             
             self.__groups[1] = [{}, core]  # making dictionary group and will have the key of 1 
             for i in range(len(thePoints)):
                 self.__groups[1][thePoints[i][0]] = thePoints[i][0] # Adding the points to the group
-            self.__labeling(dict_belong_to_key=1, thePoinsts=thePoints, dicts_come_from=None, core) # function to label points
+            self.__labeling(dict_belong_to_key=1, thePoints=thePoints, dicts_come_from=None, is_a_core_point=core) # function to label points
             return
 
         # checking if we need to make a totally new group
@@ -182,7 +183,7 @@ class DBSCAN:
             # adding the values to the new group
             for i in range(len(thePoints)):
                 self.__groups[val][0][thePoints[i][0]] = thePoints[i][0] # putting in dictionary
-            self.__labeling(dict_belong_to_key=val, thePoints=thePoints, dicts_come_from=None, core) # function to label points
+            self.__labeling(dict_belong_to_key=val, thePoints=thePoints, dicts_come_from=None, is_a_core_point=core) # function to label points
             return
 
         # looping through and finding the dictionary that is the largest
@@ -210,7 +211,7 @@ class DBSCAN:
             if core == 1 or self.__groups[val][1] == 1:
                 self.__groups[val][1] = 1 # stating that this group has a core in it and therefore is not outlier
                 isCore = 1
-            self.__labeling(dict_belong_to_key=val, thePoints=thePoints, dicts_come_from=None, isCore) # function to label points
+            self.__labeling(dict_belong_to_key=val, thePoints=thePoints, dicts_come_from=None, is_a_core_point=isCore) # function to label points
             return 
         else:
             self.__merge(val, groups_associated, thePoints, hasCorePoint) # will call the other labeling function call from inside here
@@ -228,26 +229,35 @@ class DBSCAN:
         This is the method that will do the merging of different groups together.
         The calling of this method means that more than one group needs to be grouped/merged
         """
+        
         isCore = False
         beenLabeled = False # This is to keep track of if the large 
-                                             # dictionary has been labeled or not
+        #                                      # dictionary has been labeled or not
         if self.__groups[merge_to_dict_key][1] == 1:
             beenLabeled = True # if it has a 1 means that it has been labeled
 
-
-        # Looping through the merge from set
-        for i in range(len(merge_from_set)):
+        # making the set into a list
+        merge_from_list = list(merge_from_set)
+        # # Looping through the merge from set
+        for i in range(len(merge_from_list)):
             # Checking to see if we need to label the large Dictionary
-            if beenLabeled == False:
-                if  self.__groups[merge_from_set[i][1] == 1 or hasCorePoint == True:
-                    # if in here need to label the large dictionary
-                    self.__labeling(dict_belong_to_key=merge_to_dict_key, thePoints=thePoints_index, dicts_come_from=None, 1, label_merge_to_dict=True) 
-                    beenLabeled = True
-                    # setting the value of the large dictionary to be a 1 in the list -- means it will have a core within it
-                    self.__groups[merge_to_dict_key][1] = 1
+            if ((beenLabeled == False) and (self.__groups[merge_from_list[i]][1] == 1 or hasCorePoint == True)):    
+                # if in here need to label the large dictionary
+                self.__labeling(dict_belong_to_key=merge_to_dict_key, thePoints=thePoints_index, dicts_come_from=None, is_a_core_point=1, label_merge_to_dict=True) 
+                beenLabeled = True
+                # setting the value of the large dictionary to be a 1 in the list -- means it will have a core within it
+                self.__groups[merge_to_dict_key][1] = 1
             # before merging them we will label the merge -- this will only happen when there are core points 
-            elif largeDictionary_been_labeled == True: # Will need to label the dictionary to merge to the large dictionary
-                self.__labeling(dict_belong_to_key=merge_to_dict_key, thePoints=thePoints_index, dicts_come_from=self.__groups[merge_from_set[i][0]], is_a_core_point=1)
+            elif beenLabeled == True: # Will need to label the dictionary to merge to the large dictionary
+                
+                if self.__groups[merge_from_list[i]][0] != -1:
+                    self.__labeling(dict_belong_to_key=merge_to_dict_key, thePoints=thePoints_index, 
+                                    dicts_come_from=self.__groups[merge_from_list[i]][0], is_a_core_point=1)
+                else:
+                    # if in here the will need to now merge those points and not a dictionary
+                    self.__labeling(dict_belong_to_key=merge_to_dict_key, thePoints=thePoints_index, 
+                                    dicts_come_from=None, is_a_core_point=1)
+
                  
 
 
@@ -268,7 +278,8 @@ class DBSCAN:
     
     
 
-    def __labeling(self, dict_belong_to_key, thePoints, dicts_come_from=None, is_a_core_point, label_merge_to_dict=False):
+    def __labeling(self, dict_belong_to_key, thePoints, dicts_come_from=None, is_a_core_point=1, label_merge_to_dict=False):
+        
         """
         This method will will label the each of the points.
         If the group does not have a core point in it it will be labeled with a -1.
@@ -299,9 +310,22 @@ class DBSCAN:
         # other dictionary because there is a core point somewhere in there
         if is_a_core_point == 1:
             # looping through one dictionary and labeling its points to the other dictionary
-            for key in dicts_come_from:
+            for key in dicts_come_from: # this is a list
                 self.label[key] = dict_belong_to_key
             return
 
 
 
+    def __return_label_arr(self, data):
+        """ 
+        Method to make the label array acorrding to the 
+        size of the data that will come in.
+        """
+        theSize = data.shape[0]
+
+        # making a list
+        theList = [-1] * theSize
+        
+        # making the numpy array
+        arr = np.array(theList)
+        return arr
