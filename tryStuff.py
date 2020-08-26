@@ -44,14 +44,8 @@ arr[1] = 100
 
 
 
-class Parent:
-    def fun(self):
-        print("Hi")
+theSet  = set()
+print(f"{len(theSet)} is the length of the set")
 
-class Child(Parent):
-    def fun(self):
-        print("Bye")
-
-p = Parent
-
-p.fun()
+if not theSet:
+    print("The set is empty")

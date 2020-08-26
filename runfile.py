@@ -3,13 +3,25 @@
 from dbscan import MY_DBSCAN
 # importing from sklearn the thing to make the blobs
 from sklearn.datasets import make_blobs
+import matplotlib.pyplot as plt
+import matplotlib.colors
 
 
 
 # making a blob
-X, y = make_blobs(n_samples=10, centers=3, n_features=2, random_state=49)
+X, y = make_blobs(n_samples=1500, centers=10, n_features=2, random_state=49)
 
 # instanciating the DBSCAN
-mDB = MY_DBSCAN(3, 2)
+mDB = MY_DBSCAN(.5, 7)
 
 mDB.fit(X)
+
+print(f"These are the labels{mDB.label}")
+
+fig , ax = plt.subplots(figsize=(10,10))
+
+Mcolors = ["grey",  "blue", "red","black",  "green", "orange", "hotpink", "brown", "yellow", "purple",]
+
+c = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
+plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=c)
+plt.show()
