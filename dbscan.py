@@ -54,6 +54,8 @@ class MY_DBSCAN:
                                                  # point
                                                  # Through this method we will group the points then
                                                  # they will be ready for labeling
+        #breakpoint()
+
             
 
         
@@ -100,7 +102,7 @@ class MY_DBSCAN:
                                                                # 1 or a 0.  1 means has core point, 0 no.
                         if val != -1:
                             # this is adding the label to the list
-                            # if the index of the point of the data if found in the 
+                            # if the index of the point of the data is found in the 
                             # dictionary
                             # this if statement is to check if the label is 
                             # already there with the same points if it is 
@@ -204,7 +206,7 @@ class MY_DBSCAN:
             # checking all dictionaries if they have a core point
             if self.__groups[key][1] == 1:
                 hasCorePoint = True # It is set to that becuase one of the dictionaries has a core point
-                isCore = 1
+                core = 1
         
         # removing the val from the set
         groups_associated.discard(val)
@@ -216,7 +218,7 @@ class MY_DBSCAN:
             for i in range(len(thePoints)):
                 self.__groups[val][0][thePoints[i][0]] = thePoints[i][0]
             
-            self.__labeling(dict_belong_to_key=val, thePoints=thePoints, dicts_come_from=None, is_a_core_point=isCore) # function to label points
+            self.__labeling(dict_belong_to_key=val, thePoints=thePoints, dicts_come_from=None, is_a_core_point=core) # function to label points
             return 
         else:
             self.__merge(val, groups_associated, thePoints, hasCorePoint) # will call the other labeling function call from inside here
@@ -262,7 +264,7 @@ class MY_DBSCAN:
                 
             # Labeling the contents of the dictionary merge from
             self.__labeling(dict_belong_to_key=merge_to_dict_key, thePoints=thePoints_index, 
-                            dicts_come_from=self.__groups[merge_from_list[i]][0], is_a_core_point=1)
+                            dicts_come_from=self.__groups[merge_from_list[i]][0], is_a_core_point=isCore)
 
             
                 # Will merge the other dictionaries to the biggest dictionary
@@ -277,8 +279,10 @@ class MY_DBSCAN:
             if thePoints_index[i][1] == -1:
                 # add the point to the dictionary
                 self.__groups[merge_to_dict_key][0][thePoints_index[i][0]] = thePoints_index[i][0]
-                # will label these as they go through this loop
-                self.label[thePoints_index[i][0]] = merge_to_dict_key
+                # checking to see if the is a core point to make it so that we should label them
+                if hasCorePoint:
+                    # will label these as they go through this loop
+                    self.label[thePoints_index[i][0]] = merge_to_dict_key
         
     
     
@@ -300,20 +304,20 @@ class MY_DBSCAN:
                 self.label[key] = dict_belong_to_key
             return
 
-        if dicts_come_from == None:
+        if dicts_come_from == None and is_a_core_point == 1:
             # checking to see if there was a core point
-            if is_a_core_point == 1: # means there is a core point
-                # looping through the points and labeling them
-                for i in range(len(thePoints)):
-                    # if the point is not associated with the dict_to_belong to 
-                    # and becuase there was a core point will label them to the dictiornary
-                    if thePoints[i][1] != dict_belong_to_key:
-                        self.label[thePoints[i][0]] = dict_belong_to_key # This will label the points 
+            
+            # looping through the points and labeling them
+            for i in range(len(thePoints)):
+                # if the point is not associated with the dict_to_belong to 
+                # and becuase there was a core point will label them to the dictiornary
+                if thePoints[i][1] != dict_belong_to_key:
+                    self.label[thePoints[i][0]] = dict_belong_to_key # This will label the points 
             return
 
         # This code below is what will be run when we need to label the contents of one dictionary to match the
         # other dictionary because there is a core point somewhere in there
-        if is_a_core_point == 1:
+        if is_a_core_point == 1 and dicts_come_from != None:
             # looping through one dictionary and labeling its points to the other dictionary
             for key in dicts_come_from: # this is a list
                 self.label[key] = dict_belong_to_key
