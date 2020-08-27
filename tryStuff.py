@@ -49,3 +49,9 @@ print(f"{len(theSet)} is the length of the set")
 
 if not theSet:
     print("The set is empty")
+
+b = np.array([[1,2,3]])
+a = np.array([[1,2,3],[2,3,5], [4,5,6]])
+print(len(a))
+print(b[0] == a[0])
+
