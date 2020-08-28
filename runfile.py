@@ -1,7 +1,7 @@
-# this is the file to run dbscan
+# this is the file to run dbscans and to show the differences between them
 
 from first_dbscan import MY_DBSCAN
-from second_dbscan import MY_DBSCAN_2
+from finished_DBSCAN import MY_DBSCAN_2
 # importing from sklearn the thing to make the blobs
 from sklearn.datasets import make_blobs
 import matplotlib.pyplot as plt
