@@ -1,12 +1,14 @@
 # this is the file to run dbscan
 
-from dbscan import MY_DBSCAN
+from first_dbscan import MY_DBSCAN
+from second_dbscan import MY_DBSCAN_2
 # importing from sklearn the thing to make the blobs
 from sklearn.datasets import make_blobs
 import matplotlib.pyplot as plt
 import matplotlib.colors
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
+import time
 
 
 # making a blob
@@ -19,22 +21,43 @@ Mcolors = ["grey",  "blue", "red","black",  "violet", "green", "orange", "hotpin
 clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
 
 # instanciating the DBSCAN
-mDB = MY_DBSCAN(.5, 15)
+# start = time.time()
+# mDB = MY_DBSCAN(.5, 15)
 
-mDB.fit_(X)
-
-print(f"These are the labels")
-for label in set(mDB.label):
-    print(label)
-
-# print("these are the core points")
-# for i in mDB.components:
-#     print(i)
+# mDB.fit(X)
 
 
-plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=clr, )
 
-plt.show()
+# end = time.time()
+# print(f"Program took about {end - start}")
+
+# plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=clr, )
+
+# plt.show()
+
+# # running the second db scan
+
+start = time.time()
+mDB = MY_DBSCAN_2(.5, 15)
+
+mDB.fit(X)
+
+
+
+end = time.time()
+# print(f"Program took about {end - start}")
+
+# print(type(mDB.components))
+# print(len(mDB.components[0]))
+
+# plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=clr, )
+
+# plt.show()
+
+print(f"The label for the point in the prediction is: {mDB.predict([2, 3])}")
+print(f"The labels are: {mDB.label}")
+
+
 
 # using the k means clustering
 # kmeans = KMeans()
@@ -44,10 +67,16 @@ plt.show()
 # plt.show()
 
 
-# d = DBSCAN(.5, 6)
+# start = time.time()
+# d = DBSCAN(.5, 15)
 # d.fit(X)
 
+
+# end = time.time()
+# print(f"Program took about {end - start}")
 # # printing the labels
 
 # plt.scatter(X[:,0], X[:,1], c=d.labels_, cmap=clr)
 # plt.show()
+
+
