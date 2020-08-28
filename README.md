@@ -1,4 +1,4 @@
-## My Blog on medium is found here
+## My Blog on medium is found [here](https://medium.com/@Richard_Olson/dbscan-writing-my-own-algorithm-7b79c9b5e843)
 
 # CS Build Week I for Data Science Students
 
