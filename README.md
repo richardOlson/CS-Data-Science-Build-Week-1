@@ -1,3 +1,5 @@
+## My Blog on medium is found here
+
 # CS Build Week I for Data Science Students
 
 For your first CS Build Week, you'll be implementing a few watershed
