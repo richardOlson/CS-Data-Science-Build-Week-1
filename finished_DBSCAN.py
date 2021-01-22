@@ -23,10 +23,15 @@ class MY_DBSCAN_2:
         algorithm
         """
         # sizing the labeling 
+        # a label is put at the index of the data point.  If no label will remain as -1, which is noise
         self.label = [-1] * data.shape[0]
-        self.__neighbors = [None] * data.shape[0]
-        # setting up the seen 
-        self.__seen = [0] * data.shape[0]
+        # the self._neighbors contains the index of the points in the data that are the neighbor
+        # indexes neighbors
+        self.__neighbors = [None] * data.shape[0]  
+        # setting up the seen.  Also the index of the data is the same as the seen list
+        self.__seen = [0] * data.shape[0] # 0 means not seen and 1 means the point has been visited
+        # the index equal to the data-- contains 0 == border, 1 == core, and -1 == cluster
+        # all indexes are initialized as noise
         self.__cluster_border_noise = [-1] * data.shape[0]
         
 
@@ -53,9 +58,10 @@ class MY_DBSCAN_2:
         # be noise
         neigbors = None
         for i in range(len(data)):
-            # passing in to the find the neighbors
+            # passing in to the find the neighbors for "point"
             neigbors = self.__findNeighbors(data=data, point=data[i], point_index=i)
             
+            # adding all the indexes of the the point's neighbors
             self.__neighbors[i] = neigbors # indexes of all the neigbors
             # finding if to label as noise or core
             if len(neigbors) >= self.minNum:
@@ -85,9 +91,9 @@ class MY_DBSCAN_2:
         for point in self.__neighbors[pointChosen]:
             if self.__seen[point] == 0:
             # if not seen 
-                if self.__cluster_border_noise[point] == -1:
-                    self.__seen[point] = 1
-                    self.__cluster_border_noise[point] = 0
+                if self.__cluster_border_noise[point] == -1: # if was still seen as noise but is a border point
+                    self.__seen[point] = 1 
+                    self.__cluster_border_noise[point] = 0 # change to a border point
                     # add to label
                     self.label[point] = label
             
@@ -107,7 +113,7 @@ class MY_DBSCAN_2:
         # if core has not been seen then will use it to call the 
         # recursive method.
         # Will start the label will count with a counter
-        label_counter = 1
+        label_counter = 1 # This is the label for the cluster that is being built
 
         for index in self.core_samples_indices:
             if self.__seen[index] == 0:
