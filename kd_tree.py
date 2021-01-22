@@ -15,6 +15,7 @@ class KD_tree:
     """
     data: the data that will be passed in
     depth:  this is how much that the data will be broken down
+    When the depth is left as -1, then it will go completely to just one leaf on the last node
     """
     def __init__(self, data, depth=-1, max_leaf_nodes=None):
 
@@ -26,10 +27,7 @@ class KD_tree:
         self.head = Node() # making the first Node as the head
         
         # Creating depth attribute for the class
-        if depth == "full":
-            self.depth = -1 # when neg 1 (-1) breaks down the data fully
-        else:
-            self.depth = depth
+        self.depth = depth
 
         # Finding the number axis to which cut the data
         self.num_of_axis = len(data[0])
@@ -38,7 +36,7 @@ class KD_tree:
 
 
         if max_leaf_nodes == None:
-            self.max_leaf_nodes = 0
+            self.max_leaf_nodes = -1
         else:
             self.max_leaf_nodes = max_leaf_nodes
 
@@ -72,7 +70,7 @@ class KD_tree:
         # when to stop the building of the tree
         # if have reach the required depth or the nodes are 
         # less than the max_leaf_nodes
-        if self.max_leaf_nodes <= len(data):
+        if self.max_leaf_nodes >= len(data) and self.max_leaf_nodes != -1:
             # will need to add the data to the current node and then return
             curNode.data = data # this is a list of the data in the curNode
             return  
@@ -168,4 +166,5 @@ class KD_tree:
 if __name__ == "__main__":
     # making a data point
     data = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 4,8], [22, 18, 16]]
-    print(f"This is the length of the data {len(data)}")
+    # trying to build the tree
+    KD_tree(data= data, )
