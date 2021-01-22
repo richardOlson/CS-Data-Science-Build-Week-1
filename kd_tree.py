@@ -21,7 +21,7 @@ class KD_tree:
         if not isinstance(data, list):
             raise Exception("Data is not in correct format, must be a list or list of lists")
 
-        self.num_axis = len(data[0]) # Finding the number axis to which cut the data
+        
         self.head = Node(data)
         
 
@@ -30,8 +30,9 @@ class KD_tree:
             self.depth = -1 # when neg 1 (-1) breaks down the data fully
         else:
             self.depth = depth
-        self.num_of_axis = len(data[0])
 
+        # Finding the number axis to which cut the data
+        self.num_of_axis = len(data[0])
         
         self.__dimen = []
 
@@ -78,6 +79,8 @@ class KD_tree:
         # will get the median of the data from the dimension --- this returning data sorted
         median, data = self.__get_median(data, axis=axis-1) # axis minus 1 is to have the correct element
 
+        # getting the new axis to which do the partitioning
+
         # doing the split of the data along the median.
         # the median will go to the left side
         self.__build(data[:median], at_depth=at_depth + 1, axis=)
@@ -96,6 +99,19 @@ class KD_tree:
 
         data.sort(key=lambda dataPoint: dataPoint[axis)
         return data
+
+
+
+    def __get_new_axis(self, current_axis):
+        # looking at what the axis is and will then return the one 
+        # that will be the next in line
+        if current_axis < self.num_of_axis -1:
+            # if in here we can just increment the current_axis
+            return current_axis + 1
+        else:
+            current_axis = 0
+
+
 
     def __get_median(self, data, axis):
         """
