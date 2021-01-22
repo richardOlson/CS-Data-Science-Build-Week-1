@@ -48,7 +48,7 @@ class KD_tree:
     
 
 
-    def __build(self, data, at_depth, axis, median=None, curNode):
+    def __build(self, data, at_depth, axis, curNode):
         """
         This is the method that will build the 
         tree.  This function  is recursive and will continue to be called
@@ -106,9 +106,6 @@ class KD_tree:
 
 
     def __sort(self, data, axis):
-        theLen = len(data[0])
-        # looping through the different dimensions
-        # sorting the data in place
         
         # adding a list of the axis -- may not need to do this later on
         self.__dimen.append(axis)
@@ -143,7 +140,7 @@ class KD_tree:
         # to be split and then will get the median and return it and
         # also the data that has been sorted
 
-        data = self.__sort(data)
+        data = self.__sort(data, axis=axis)
         # now will find the median
         median = len(data) // 2
         
@@ -152,11 +149,23 @@ class KD_tree:
 
 
 
-    def __build_tree(self, data, curDepth, theNode):
-        # This will be the recursive function that will 
-        # build the tree
-        # building will occur until there are 20 point or the 
-        # depth is reached
-        if len(theNode.data) > 
+    # def __build_tree(self, data, curDepth, theNode):
+    #     # This will be the recursive function that will 
+    #     # build the tree
+    #     # building will occur until there are 20 point or the 
+    #     # depth is reached
+    #     if len(theNode.data) > 
 
 
+    # doing the searching for the new tree
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    # making a data point
+    data = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 4,8], [22, 18, 16]]
+    print(f"This is the length of the data {len(data)}")
