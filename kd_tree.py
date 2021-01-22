@@ -1,11 +1,12 @@
 # my implementation of the kd_tree
 
 class Node:
-    def __init__(self, data):
+    def __init__(self, data=None, median=None, greater_lesser=None):
         self.data = data
         self.right = None
         self.left = None
-        self.median_point = None
+        self.greater_lesser = None # This is to tell if this node is a right or left node (which side of the median)
+        self.median_point = median
         self.dimension = None # This will tell the dimension that the 
                               # cut is found at
 
@@ -22,9 +23,8 @@ class KD_tree:
             raise Exception("Data is not in correct format, must be a list or list of lists")
 
         
-        self.head = Node(data)
+        self.head = Node() # making the first Node as the head
         
-
         # Creating depth attribute for the class
         if depth == "full":
             self.depth = -1 # when neg 1 (-1) breaks down the data fully
@@ -43,11 +43,12 @@ class KD_tree:
             self.max_leaf_nodes = max_leaf_nodes
 
         self.max_leaf_nodes = max_leaf_nodes
-        self.__build(data, at_depth=0, axis=0)
+        # building the tree with making the nodes
+        self.__build(data, at_depth=0, axis=0, curNode=self.head)
     
 
 
-    def __build(self, data, at_depth, axis):
+    def __build(self, data, at_depth, axis, median=None, curNode):
         """
         This is the method that will build the 
         tree.  This function  is recursive and will continue to be called
@@ -59,6 +60,11 @@ class KD_tree:
         on the tree.  This is used to compare with the tree instance depth so as
         to not pass it.
 
+        median: this is the median at with the cut was done when entering this function
+        if it is none then there is no cut and is the first node likely or an end node
+
+        curNode:  This is the currrent node that the tree is on when entering this function
+
         axis: this is the current axis that the cut should be done on
         """
 
@@ -67,25 +73,35 @@ class KD_tree:
         # if have reach the required depth or the nodes are 
         # less than the max_leaf_nodes
         if self.max_leaf_nodes <= len(data):
+            # will need to add the data to the current node and then return
+            curNode.data = data # this is a list of the data in the curNode
             return  
         if self.depth < at_depth and self.depth != -1:
+            curNode.data = data
             return
         # checking to see if there are no more to split
         if len(data) == 1 or len(data) == 0:
+            curNode.data = data
             return
         
         # below here still building the tree
         
         # will get the median of the data from the dimension --- this returning data sorted
-        median, data = self.__get_median(data, axis=axis-1) # axis minus 1 is to have the correct element
-
+        median, data = self.__get_median(data, axis=axis) # axis minus 1 is to have the correct element
+        
         # getting the new axis to which do the partitioning
+        axis = self.__get_new_axis(axis)
 
+        # getting the nodes that will be passed in
+        curNode.left = Node(median=median, greater_lesser="l")
+        curNode.right = Node(median=median, greater_lesser="g")
         # doing the split of the data along the median.
-        # the median will go to the left side
-        self.__build(data[:median], at_depth=at_depth + 1, axis=)
-        # building the tree
-        self.__build_tree(data, self.depth, Node(data))
+        # left side
+        self.__build(data[:median], at_depth=at_depth + 1, axis=axis, curNode=curNode.left)
+        # right side
+        # the median will go to the right side
+        self.__build(data[median:], at_depth=at_depth+1, axis=axis, curNode=curNode.right) # from the median to the end
+        
 
 
 
@@ -97,7 +113,7 @@ class KD_tree:
         # adding a list of the axis -- may not need to do this later on
         self.__dimen.append(axis)
 
-        data.sort(key=lambda dataPoint: dataPoint[axis)
+        data.sort(key=lambda dataPoint: dataPoint[axis])
         return data
 
 
@@ -129,13 +145,7 @@ class KD_tree:
 
         data = self.__sort(data)
         # now will find the median
-        median = None
-        # getting the median
-        if len(data) % 2 == 0:
-            # is even number in the length
-            median = data//2
-        else:
-            median = data //2 + 1
+        median = len(data) // 2
         
         # returning both the data and the median
         return median, data
