@@ -2,6 +2,7 @@
 
 # doing an import of a queue
 from queue import Queue
+from numpy import linalg
 
 class Node:
     def __init__(self, data=None, median=None, median_number=None, side_of_cut=None, parent=None):
@@ -15,6 +16,7 @@ class Node:
         # The side_of_cut is to tell you which side of the cut the the node above this one does this 
         # Node lay.  If there is no Node above then will remain as None
         self.side_of_cut = side_of_cut # This is to tell if this node is a right or left node (which side of the median)
+
         self.median_point = median
         self.median_number = median_number
         # The axis cut will be an integer ie: 0, 1, 2.  The 0 means the first axis in the data, 1-- the second ect.
@@ -122,11 +124,11 @@ class KD_tree:
         # below here still building the tree
         
         # will get the median of the data from the dimension --- this returning data sorted
-        median_number ,median, data = self.__get_median(data, axis=axis) # axis minus 1 is to have the correct element
+        median_number ,median, data = self.__get_median(data, axis=axis) 
         
         # getting the nodes that will be passed in and the current Node set up. 
         curNode.median_number = median_number
-        curNode.median_point = median
+        curNode.median_point = median # this is the median index -- probably don't need this
         curNode.axis_cut = axis
         
         # creating the two new nodes
@@ -212,7 +214,7 @@ class KD_tree:
         # making it so that if there is a tuple that it can be used
         if self.keep_original_index:
 
-            if self.num_of_axis == 1: # that means that is one dimensional, just numbes
+            if self.num_of_axis == 1: # that means that is one dimensional, just numbers
                 median_number = data[median_index][1]
             
             else:                    
@@ -223,9 +225,33 @@ class KD_tree:
 
         else:
             median_number = data[median_index][axis]
+
+        # checking what the number below the median if it is the same then we will need to 
+        # move the median index down.
+        # This is to keep all the points that have the same number on the same side.
+        # We will move the index down unless we are at index 0 becuase it can't move any further.
+        median_index = self.__move_if_need_median_index(median_number=median_number, median_index=median_index)
         
         # returning both the data and the median
         return median_number, median_index, data
+
+
+
+
+    def __move_if_need_median_index(median_number, median_index, data):
+        """
+        This is the method that will move the index if it is needed to try to make sure that all the numbers
+        that are the same remain on the same side.
+        """
+        while True:
+            if median_index == 0:
+                return median_index
+            
+            if data[median_index - 1] != median_number:
+                return median_index
+            
+            # shifting down to next element
+            median_index = median_index -1
 
 
 
@@ -314,6 +340,7 @@ class KD_tree:
         point:  This is the point that is used to look for its neighbors
         
         Returns:  This function will return a list of all the neighbors of the point that is passed in.
+        If "keep_original_index == True" then the list of neighbors will be the indexes of the neighbors
             
         """
 
@@ -328,15 +355,74 @@ class KD_tree:
         # doing the checks to when we want to return 
 
         # have reached the data that are neighbors
+        # Here will either store the index of the neigbors or will store the neighbors
         if curNode.data is not None:
-            neighbors.append(curNode.data)
-            return 
+            
+            some_neighbors = self.check_data_points_for_neighbors(eps=eps, curNode=curNode, point=point)
+            return some_neighbors
+
+        # need to choose the direction to go to look
+        # getting the edge of the radius
+        point_number = point[curNode.axis_cut]
+        number_above_eps = point_number + eps
+        number_below_eps = point_number - eps
+
+        # This is for sure should continue in the left side
+        # need to check if should go down the right side also
+        if point_number < curNode.median_number:
+            rightList = [] # getting it so that it can be added to the left list
+
+            # Goint down the left side
+            leftList = self.find_kd_tree_neighbors(eps=eps, point=point, curNode=curNode.left)
+
+            # checking the right side
+            if number_above_eps > curNode.median_number:
+                # going down the right side also
+                rightList = self.find_kd_tree_neighbors(eps=eps, point=point, curNode=curNode.right)   
+            # joining the lists
+            neighbors = leftList + rightList
+            return neighbors
+        # In here means that the point number is on the right side
+        else:
+            rightList = []
+            leftList = []
+            # checking if want to use the left side along with the right side
+            if number_below_eps < curNode.median_number:
+                # if in here will be going down the left side also
+                leftList = self.find_kd_tree_neighbors(eps=eps, point=point, curNode=curNode.left)
+            
+            # going down the right side
+            rightList = self.find_kd_tree_neighbors(eps=eps, point=point, curNode=curNode.right)
+
+            neighbors = leftList + rightList
+            return neighbors
+
         
 
 
         
 
 
+    # This is the function that will check to see if any of the points are neighbors.
+    # This is function will grab either the indices or the data depending on flag
+    # of keep_original_index
+    def check_data_points_for_neighbors(self, eps, curNode, point):
+        neighbor_list = []
+
+        for n_pt in curNode.data:
+            # using the linagl_norm to find the distance
+            the_dist = linalg.norm(point - n_pt)
+            
+            if the_dist <= eps:
+                if self.keep_original_index == True:
+                    # adding just the index
+                    neighbor_list.append(n_pt[0])
+                    # adding the data points that are neighbors
+                else:
+                    neighbor_list.append(n_pt[1])
+        
+        # returning the neigborlist
+        return neighbor_list
 
 
 
@@ -354,3 +440,8 @@ if __name__ == "__main__":
     print("Now doing the breadth print of the tree\n")
     # now doing the breath traversal print
     tree.print_breadth()
+
+    new_data = [(0,[3,4,5]), (1,[12, 22, 11]), (2,[33, 3, 7]), (3,[1,34, 12]), (4,[6, 4,8]), (5,[22, 18, 16])]
+
+    # want to print the data
+    print(f"This is printing the data \n {new_data[:][:][0]}")
