@@ -202,6 +202,7 @@ class KD_tree:
         # first need to call the sorting function along the axis
         # to be split and then will get the median and return it and
         # also the data that has been sorted
+        
 
         data = self.__sort(data, axis=axis)
 
@@ -230,7 +231,8 @@ class KD_tree:
         # move the median index down.
         # This is to keep all the points that have the same number on the same side.
         # We will move the index down unless we are at index 0 becuase it can't move any further.
-        median_index = self.__move_if_need_median_index(median_number=median_number, median_index=median_index)
+        median_index = self.__move_if_need_median_index(median_number=median_number, 
+                                                        median_index=median_index, data=data)
         
         # returning both the data and the median
         return median_number, median_index, data
@@ -238,7 +240,7 @@ class KD_tree:
 
 
 
-    def __move_if_need_median_index(median_number, median_index, data):
+    def __move_if_need_median_index(self, median_number, median_index, data):
         """
         This is the method that will move the index if it is needed to try to make sure that all the numbers
         that are the same remain on the same side.
