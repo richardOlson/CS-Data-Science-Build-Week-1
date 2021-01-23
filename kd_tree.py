@@ -27,10 +27,20 @@ class KD_tree:
     depth:  this is how much that the data will be broken down
     When the depth is left as -1, then it will go completely to just one leaf on the last node
 
+    
+
     max_leaf_nodes: If the number of leaves is equal to or less than max_leaf_nodes then the building of 
     the tree will stop
     """
-    def __init__(self, data, depth=-1, max_leaf_nodes=None):
+    def __init__(self, data, depth=-1, max_leaf_nodes=None, keep_original_index=True):
+
+        """
+        keep_original_index: when this flag is set to true then the data which is a list of data points is
+        changed to a list of tuples where the first index of the tuple is the original elment index and 
+        the second element is the data point.  This makes it so that when sorting occurs you can still have
+        knowlege of the original element index if desired
+
+        """
 
         # Making sure the data is the correct form
         if not isinstance(data, list):
@@ -53,6 +63,14 @@ class KD_tree:
         else:
             self.max_leaf_nodes = max_leaf_nodes
 
+        self.keep_original_index = keep_original_index
+
+        if self.keep_original_index:
+            # This is the fucnction that will make the tuple that 
+            # where the first element in the tuple will contain the original index of all the data
+            data = self.__make_tup(data)
+       
+
         #self.max_leaf_nodes = max_leaf_nodes
         # building the tree with making the nodes
         self.__build(data, at_depth=0, axis=0, curNode=self.head)
@@ -70,7 +88,8 @@ class KD_tree:
         of the data.  This is so that when using the DBSCAN it can use the methods that
         have beeen implemented, which use the data indexes.
         
-        data:  the data that is to be split and put into nodes
+        data:  the data that is to be split and put into nodes.  The data is made so that 
+        it comes in as a l
 
         at_depth: this is the current depth that the function is at 
         on the tree.  This is used to compare with the tree instance depth so as
@@ -133,7 +152,7 @@ class KD_tree:
         """
         # doing a loop of the data and makin the tuple
         for i in range(len(data)):
-            data[i] = tuple(i, data[i])
+            data[i] = (i, data[i])
         
         return data
 
@@ -143,7 +162,16 @@ class KD_tree:
         # adding a list of the axis -- may not need to do this later on
         self.__dimen.append(axis)
 
-        data.sort(key=lambda dataPoint: dataPoint[axis])
+        # making it so that it can use the tuples if necesary to keep the original index
+        if self.keep_original_index:
+            if self.num_of_axis == 1:
+                data.sort(key=lambda dataPoint: dataPoint[1])
+            else:
+                data.sort(key=lambda dataPoint: dataPoint[1][axis])
+        elif self.num_of_axis ==1:
+            data.sort(key=lambda dataPoint: dataPoint)
+        else:
+            data.sort(key=lambda dataPoint: dataPoint[axis])
         return data
 
 
@@ -178,8 +206,23 @@ class KD_tree:
         
         # now will find the median
         median_index = len(data) // 2
+
         # getting the median number
-        median_number = data[median_index][axis]
+       
+        # making it so that if there is a tuple that it can be used
+        if self.keep_original_index:
+
+            if self.num_of_axis == 1: # that means that is one dimensional, just numbes
+                median_number = data[median_index][1]
+            
+            else:                    
+                median_number = data[median_index][1][axis]
+
+        elif self.num_of_axis == 1: # checking how many dimensions, if true is just a scalar
+            median_number = data[median_index]
+
+        else:
+            median_number = data[median_index][axis]
         
         # returning both the data and the median
         return median_number, median_index, data
@@ -303,7 +346,7 @@ if __name__ == "__main__":
     # making a data point
     data = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 4,8], [22, 18, 16]]
     # trying to build the tree
-    tree = KD_tree(data= data, )
+    tree = KD_tree(data= data, keep_original_index=False)
 
     # doing the printing of the tree that has been build
     tree.print_tree()
