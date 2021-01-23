@@ -1,5 +1,8 @@
 # my implementation of the kd_tree
 
+# doing an import of a queue
+from queue import Queue
+
 class Node:
     def __init__(self, data=None, median=None, median_number=None, side_of_cut=None, parent=None):
         self.data = data
@@ -61,6 +64,11 @@ class KD_tree:
         This is the method that will build the 
         tree.  This function  is recursive and will continue to be called
         while building the tree.
+
+        When preparing the tree it will do a loop first which will put the data in a 
+        list of tuples where the first element is n the tuple is the original index 
+        of the data.  This is so that when using the DBSCAN it can use the methods that
+        have beeen implemented, which use the data indexes.
         
         data:  the data that is to be split and put into nodes
 
@@ -117,6 +125,17 @@ class KD_tree:
         self.__build(data[median:], at_depth=at_depth+1, axis=axis, curNode=curNode.right) # from the median to the end
         
 
+
+
+    def __make_tup(self, data):
+        """
+        This is the function that will make the tuple of the data.
+        """
+        # doing a loop of the data and makin the tuple
+        for i in range(len(data)):
+            data[i] = tuple(i, data[i])
+        
+        return data
 
 
     def __sort(self, data, axis):
@@ -191,13 +210,89 @@ class KD_tree:
         if curNode.data != None:
             print(*curNode.data)
             return
-        breakpoint()
+        
         # printing the cuts that have happened
         print(f"The cut was done at {curNode.median_number} ")
 
         # going to the left and then going to the right branch
         self.__depth_traversal_print(curNode=curNode.left)
         self.__depth_traversal_print(curNode=curNode.right)
+
+
+    def print_breadth(self):
+        self.__breadth_traversal_print(curNode=self.head)
+    
+    def __breadth_traversal_print(self, curNode):
+
+        """
+        To start this function the curNode must have the head node passed into it.
+        
+        """
+            
+        # making the queue and then putting something into the queue   
+        the_queue = Queue()
+        # will be putting in the curNode into the queue
+        # so that the function will work further down the line
+        the_queue.put(curNode)
+
+        while the_queue.empty() == False:
+            # will go through the function and use the queue
+            # dequeing 
+            curNode = the_queue.get()
+            
+            # building the print list
+            if curNode.axis_cut != None:
+                # willl print that a cut has been done
+                print(f"A cut was performed at this node on the number {curNode.median_number} on the axis of {curNode.axis_cut}")
+            if curNode.data != None:
+                # printing out the data that is at the node here -- these are the leaves
+                print(f"At this Node are the leaves (data-points) found -- {curNode.data}")
+            
+            # checking to see if the chile Nodes are empty and if they are not then they will be added
+            if curNode.left is not None:
+                the_queue.put(curNode.left)
+            if curNode.right is not None:
+                the_queue.put(curNode.right)
+
+    
+    # below is the building of the function that will do the searching in the kd_tree
+    # this function will have passed in the eps parameter from the DBSCAN function.
+    # The function below will make it so that it doesn't hopefully need to look at
+    # all of the points to find another points neighbors becuase the data will be partitioned in 
+    # the tree.
+    def find_kd_tree_neighbors(self, eps, point, curNode=None, neighbors=[]):
+        """
+        This is the base function that will be used to search through the kd_tree to find the 
+        neighbors of the point that is passed into this function.
+
+        eps:  This is the value or distance that another point must be equal to or under to 
+        be considered a neighbor.
+
+        point:  This is the point that is used to look for its neighbors
+        
+        Returns:  This function will return a list of all the neighbors of the point that is passed in.
+            
+        """
+
+        # Will first need to traverse the tree. -- will do a breath type of traversal
+        # If one branch is good to go down then it will be added to the queue, if is not good to 
+        # traverse through then the branch will not be added to the queue.
+
+        # doing a depth type of search
+        if curNode == None:
+            curNode = self.head
+        
+        # doing the checks to when we want to return 
+
+        # have reached the data that are neighbors
+        if curNode.data is not None:
+            neighbors.append(curNode.data)
+            return 
+        
+
+
+        
+
 
 
 
@@ -212,3 +307,7 @@ if __name__ == "__main__":
 
     # doing the printing of the tree that has been build
     tree.print_tree()
+
+    print("Now doing the breadth print of the tree\n")
+    # now doing the breath traversal print
+    tree.print_breadth()
