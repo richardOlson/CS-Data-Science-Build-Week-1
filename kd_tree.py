@@ -1,19 +1,19 @@
 # my implementation of the kd_tree
 
 class Node:
-    def __init__(self, data=None, median=None, median_number=None, greater_lesser=None):
+    def __init__(self, data=None, median=None, median_number=None, side_of_cut=None, parent=None):
         self.data = data
         # The right or left is how the connection from one Node to the next node on the right or left will connect.
         # The parent is the connection to the Node that is the parent to this Node if there is one
         # If there is no parent, then will be left as None.
         self.right = None
         self.left = None
-        self.parent = None
+        self.parent = parent
         # The side_of_cut is to tell you which side of the cut the the node above this one does this 
         # Node lay.  If there is no Node above then will remain as None
-        self.side_of_cut = None # This is to tell if this node is a right or left node (which side of the median)
+        self.side_of_cut = side_of_cut # This is to tell if this node is a right or left node (which side of the median)
         self.median_point = median
-        self.median_number = None
+        self.median_number = median_number
         # The axis cut will be an integer ie: 0, 1, 2.  The 0 means the first axis in the data, 1-- the second ect.
         self.axis_cut = None 
 
@@ -97,14 +97,18 @@ class KD_tree:
         # will get the median of the data from the dimension --- this returning data sorted
         median_number ,median, data = self.__get_median(data, axis=axis) # axis minus 1 is to have the correct element
         
+        # getting the nodes that will be passed in and the current Node set up. 
+        curNode.median_number = median_number
+        curNode.median_point = median
+        curNode.axis_cut = axis
+        
+        # creating the two new nodes
+        curNode.left = Node(side_of_cut="l", parent=curNode)
+        curNode.right = Node(side_of_cut="r", parent=curNode)
+
         # getting the new axis to which do the partitioning
         axis = self.__get_new_axis(axis)
 
-        # getting the nodes that will be passed in and setting up the current Node
-        curNode.median_number = median_number
-        curNode.median_point = median
-        curNode.left = Node(median=median, greater_lesser="l", median_number=median_number)
-        curNode.right = Node(median=median, greater_lesser="g", median_number=median_number)
         # doing the split of the data along the median.
         # left side
         self.__build(data[:median], at_depth=at_depth + 1, axis=axis, curNode=curNode.left)
