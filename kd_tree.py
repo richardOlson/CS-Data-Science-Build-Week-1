@@ -331,7 +331,7 @@ class KD_tree:
     # The function below will make it so that it doesn't hopefully need to look at
     # all of the points to find another points neighbors becuase the data will be partitioned in 
     # the tree.
-    def find_kd_tree_neighbors(self, eps, point, curNode=None, neighbors=[]):
+    def find_kd_tree_neighbors(self, eps, point, curNode=None):
         """
         This is the base function that will be used to search through the kd_tree to find the 
         neighbors of the point that is passed into this function.
@@ -445,5 +445,5 @@ if __name__ == "__main__":
 
     new_data = [(0,[3,4,5]), (1,[12, 22, 11]), (2,[33, 3, 7]), (3,[1,34, 12]), (4,[6, 4,8]), (5,[22, 18, 16])]
 
-    # want to print the data
-    print(f"This is printing the data \n {new_data[:][:][0]}")
+   # Trying to find the neighbors of the point that will be passed int
+   theList = tree.find_kd_tree_neighbors()
