@@ -2,7 +2,20 @@ import numpy as np
     
 class MY_DBSCAN_2:
 
-    def __init__(self, eps, minNum):
+    def __init__(self, eps, minNum, algorithm="auto", leaf_size=25):
+        """
+        eps: this is the distance that two points must be equal to or less than to be considered neighbors
+
+        minNum: This is the minimum number of neighors a point must have to be considered a core point.
+
+        algorithm:  This can be "auto", "brute", or "kd_tree".  This determines the way the dbscan function will
+        look for its neighbors.
+
+        leaf_size:  This is passed into the kd_tree if it is used. Changing this amount will alter the memory 
+        consumption and will also change speed of finding neighbors.
+        """
+        self.algorithm = algorithm
+        self.leaf_size = leaf_size
         self.eps = eps
         self.minNum = minNum
         self.label = [] # this will be the labels that are given to the data
