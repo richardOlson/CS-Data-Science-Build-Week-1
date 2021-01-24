@@ -415,7 +415,7 @@ class KD_tree:
         # making it so that if the values are in a list that it will be able to find the 
         # distance
         the_dist = None
-
+        
         for n_pt in curNode.data:
             # checking the instance of the data if it is a instance then the dist will be used
             if isinstance(n_pt, list):
@@ -427,10 +427,10 @@ class KD_tree:
             if the_dist <= eps:
                 if self.keep_original_index == True:
                     # adding just the index
-                    neighbor_list.append(n_pt[0])
+                    neighbor_list.append(n_pt[1])
                     # adding the data points that are neighbors
                 else:
-                    neighbor_list.append(n_pt[1])
+                    neighbor_list.append(n_pt)
         
         # returning the neigborlist
         return neighbor_list
@@ -454,9 +454,15 @@ if __name__ == "__main__":
 
     new_data = [(0,[3,4,5]), (1,[12, 22, 11]), (2,[33, 3, 7]), (3,[1,34, 12]), (4,[6, 4,8]), (5,[22, 18, 16])]
 
-    # # Trying to find the neighbors of the point that will be passed int
-    # theList = tree.find_kd_tree_neighbors(eps=9, point=[5, 7, 8], curNode=tree.head)
+    # Trying to find the neighbors of the point that will be passed int
+    theList = tree.find_kd_tree_neighbors(eps=9, point=[5, 7, 8], curNode=tree.head)
 
-    # print(theList)
+    print(f"The neighbors for the point [5,7,8] is {theList}")
+
+    print("The following is a loop that will loop through and will show what the distance")
+    print("is for each of the following points in the data with respect to the point")
+
+    for each_point in data:
+        print(f"The distance for {each_point} and [5,7,8] is {dist(each_point, [5,7,8])}")
 
     
