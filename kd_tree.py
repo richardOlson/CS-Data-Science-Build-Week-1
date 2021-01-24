@@ -1,8 +1,10 @@
 # my implementation of the kd_tree
+# This implimentation needs to be python 3.8 or greater
 
 # doing an import of a queue
 from queue import Queue
 from numpy import linalg
+from math import dist
 
 class Node:
     def __init__(self, data=None, median=None, median_number=None, side_of_cut=None, parent=None):
@@ -410,10 +412,17 @@ class KD_tree:
     # of keep_original_index
     def check_data_points_for_neighbors(self, eps, curNode, point):
         neighbor_list = []
+        # making it so that if the values are in a list that it will be able to find the 
+        # distance
+        the_dist = None
 
         for n_pt in curNode.data:
-            # using the linagl_norm to find the distance
-            the_dist = linalg.norm(point - n_pt)
+            # checking the instance of the data if it is a instance then the dist will be used
+            if isinstance(n_pt, list):
+                the_dist = dist(point, n_pt)
+            else:# this one is for the numpy array
+                # using the linagl_norm to find the distance
+                the_dist = linalg.norm(point - n_pt)
             
             if the_dist <= eps:
                 if self.keep_original_index == True:
@@ -445,5 +454,9 @@ if __name__ == "__main__":
 
     new_data = [(0,[3,4,5]), (1,[12, 22, 11]), (2,[33, 3, 7]), (3,[1,34, 12]), (4,[6, 4,8]), (5,[22, 18, 16])]
 
-   # Trying to find the neighbors of the point that will be passed int
-   theList = tree.find_kd_tree_neighbors()
+    # # Trying to find the neighbors of the point that will be passed int
+    # theList = tree.find_kd_tree_neighbors(eps=9, point=[5, 7, 8], curNode=tree.head)
+
+    # print(theList)
+
+    
