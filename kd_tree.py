@@ -59,7 +59,7 @@ class KD_tree:
         # Finding the number axis to which cut the data
         self.num_of_axis = len(data[0])
         
-        self.__dimen = []
+        
 
 
         if max_leaf_nodes == None:
@@ -154,6 +154,7 @@ class KD_tree:
         """
         This is the function that will make the tuple of the data.
         """
+        
         # doing a loop of the data and makin the tuple
         for i in range(len(data)):
             data[i] = (i, data[i])
@@ -163,9 +164,6 @@ class KD_tree:
 
     def __sort(self, data, axis):
         
-        # adding a list of the axis -- may not need to do this later on
-        self.__dimen.append(axis)
-
         # making it so that it can use the tuples if necesary to keep the original index
         if self.keep_original_index:
             if self.num_of_axis == 1:
@@ -417,6 +415,10 @@ class KD_tree:
         the_dist = None
         
         for n_pt in curNode.data:
+            # making it to hande when it comes as a tuple 
+            if self.keep_original_index == True:
+                n_pt = n_pt[1]
+           
             # checking the instance of the data if it is a instance then the dist will be used
             if isinstance(n_pt, list):
                 the_dist = dist(point, n_pt)
@@ -425,12 +427,8 @@ class KD_tree:
                 the_dist = linalg.norm(point - n_pt)
             
             if the_dist <= eps:
-                if self.keep_original_index == True:
-                    # adding just the index
-                    neighbor_list.append(n_pt[1])
-                    # adding the data points that are neighbors
-                else:
-                    neighbor_list.append(n_pt)
+                # adding the data points that are neighbors
+                neighbor_list.append(n_pt)
         
         # returning the neigborlist
         return neighbor_list
@@ -441,9 +439,9 @@ class KD_tree:
 
 if __name__ == "__main__":
     # making a data point
-    data = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 4,8], [22, 18, 16]]
+    d = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 4,8], [22, 18, 16]]
     # trying to build the tree
-    tree = KD_tree(data= data, keep_original_index=False)
+    tree = KD_tree(data= d, keep_original_index=True)
 
     # doing the printing of the tree that has been build
     tree.print_tree()
@@ -462,7 +460,8 @@ if __name__ == "__main__":
     print("The following is a loop that will loop through and will show what the distance")
     print("is for each of the following points in the data with respect to the point")
 
-    for each_point in data:
+    for each_point in d:
+        breakpoint()
         print(f"The distance for {each_point} and [5,7,8] is {dist(each_point, [5,7,8])}")
 
     
