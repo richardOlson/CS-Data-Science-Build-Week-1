@@ -1,4 +1,5 @@
 import numpy as np
+from kd_tree import KD_tree
     
 class MY_DBSCAN_2:
 
@@ -15,6 +16,8 @@ class MY_DBSCAN_2:
         consumption and will also change speed of finding neighbors.
         """
         self.algorithm = algorithm
+        # the Tree is the holder of the KD_tree is there is one to be used
+        self.tree = None
         self.leaf_size = leaf_size
         self.eps = eps
         self.minNum = minNum
@@ -29,6 +32,13 @@ class MY_DBSCAN_2:
         self.__neighbors = []
         self.__seen = None
 
+    
+    def choose_neighbor_algo(self):
+        """
+        This is the function that will set the algorithm to be used. This function will 
+        instanciate the kd_tree and put the tree value on the attribute self.tree.
+        If "auto" is passed in on DBSCAN this function will decide if a tree or brute force is used.
+        """
 
     def fit(self, data):
         """
@@ -70,7 +80,13 @@ class MY_DBSCAN_2:
         # to find those that form a cluster or will 
         # be noise
         neigbors = None
+        # making it so that it can use the kd_tree
+        if self.algorithm == "kd_tree":
+
         for i in range(len(data)):
+            if self.algorithm == "kd_tree":
+                # will be doing the kd_tree here to get the neighbors
+
             # passing in to the find the neighbors for "point"
             neigbors = self.__findNeighbors(data=data, point=data[i], point_index=i)
             
