@@ -59,7 +59,7 @@ class KD_tree:
         # Finding the number axis to which cut the data
         self.num_of_axis = len(data[0])
         
-        
+         
 
 
         if max_leaf_nodes == None:
@@ -73,7 +73,8 @@ class KD_tree:
             # This is the fucnction that will make the tuple that 
             # where the first element in the tuple will contain the original index of all the data
             data = self.__make_tup(data)
-       
+            # This is the data that is used when keep_original_index
+            self.data = [None] * len(data)
 
         #self.max_leaf_nodes = max_leaf_nodes
         # building the tree with making the nodes
@@ -157,9 +158,9 @@ class KD_tree:
         
         # doing a loop of the data and makin the tuple
         for i in range(len(data)):
-            data[i] = (i, data[i])
+            self.data[i] = (i, data[i])
         
-        return data
+        return self.data
 
 
     def __sort(self, data, axis):
