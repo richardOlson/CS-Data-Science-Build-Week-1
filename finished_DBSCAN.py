@@ -15,6 +15,8 @@ class MY_DBSCAN_2:
         leaf_size:  This is passed into the kd_tree if it is used. Changing this amount will alter the memory 
         consumption and will also change speed of finding neighbors.
         """
+
+        
         self.algorithm = algorithm
         # the Tree is the holder of the KD_tree is there is one to be used
         self.tree = None
@@ -27,27 +29,80 @@ class MY_DBSCAN_2:
                                          # that are found in the data
         
         
+        
+
+
         self.components = [] 
         self.__cluster_border_noise = []
         self.__neighbors = []
         self.__seen = None
 
     
-    def choose_neighbor_algo(self):
+    def __choose_neighbor_algo(self, algorithm, data):
         """
         This is the function that will set the algorithm to be used. This function will 
         instanciate the kd_tree and put the tree value on the attribute self.tree.
         If "auto" is passed in on DBSCAN this function will decide if a tree or brute force is used.
+
+        self.algorithm will be changed to the end result of what this function causes, ie.
+        It will be "brute" if brute is determined to be more efficient and will be "kd_tree" 
+        if this is determined to be more efficient.
+
+        Returns the attribute for self.algorithm
         """
+        if algorithm == "auto":
+            # calling the function to return if should
+            # be a brute or a kd-tree
+            algorithm = self.__brute_kd(data)
+            # choosing making the tree if necessary
+            self.algorithm = algorithm
+
+            # if is kd will then make the tree
+            if self.algorithm = "kd":
+                # making the tree
+                self.tree = KD_tree(data=data, max_leaf_nodes=self.leaf_size)
+            
+
+
+
+
+    def __brute_kd(self, data):
+        """
+        Returns "brute" or "kd"
+        Looks at the size of the data to determine which
+        type should be done.
+        """
+        if len(data) > 30:
+            return "kd"
+        else:
+            return "brute"
+
+    
+    
 
     def fit(self, data):
         """
         This is the second try for the clustering 
         algorithm
         """
+
+
         # sizing the labeling 
         # a label is put at the index of the data point.  If no label will remain as -1, which is noise
         self.label = [-1] * data.shape[0]
+
+        
+        # calling the fuction to determine the algorithm
+        # This is used if not "brute"
+        if algorithm == "kd_tree" or algorithm == "auto":
+            # calling the function to choose and then set up the
+            # kd_tree if necessary
+            self.algorithm = self.__choose_neighbor_algo(algorithm, data)
+        
+        else:
+            self.algorithm = algorithm
+
+
         # the self._neighbors contains the index of the points in the data that are the neighbor
         # indexes neighbors
         self.__neighbors = [None] * data.shape[0]  
