@@ -52,6 +52,10 @@ class KD_tree:
 
         
         self.head = Node() # making the first Node as the head
+
+        # This is making the data attribute that will hold the data
+        # when keep_original index == True
+        #self.data = None 
         
         # Creating depth attribute for the class
         self.depth = depth
@@ -70,11 +74,12 @@ class KD_tree:
         self.keep_original_index = keep_original_index
 
         if self.keep_original_index:
+            # This is the data that is used when keep_original_index
+            self.data = [None] * len(data)
             # This is the fucnction that will make the tuple that 
             # where the first element in the tuple will contain the original index of all the data
             data = self.__make_tup(data)
-            # This is the data that is used when keep_original_index
-            self.data = [None] * len(data)
+            
 
         #self.max_leaf_nodes = max_leaf_nodes
         # building the tree with making the nodes
@@ -462,7 +467,6 @@ if __name__ == "__main__":
     print("is for each of the following points in the data with respect to the point")
 
     for each_point in d:
-        breakpoint()
         print(f"The distance for {each_point} and [5,7,8] is {dist(each_point, [5,7,8])}")
 
     
