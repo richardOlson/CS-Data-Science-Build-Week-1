@@ -45,19 +45,44 @@ mDB.fit(X)
 
 
 end = time.time()
-# print(f"Program took about {end - start}")
 
-# print(type(mDB.components))
-# print(len(mDB.components[0]))
+print(f"Program took about {end - start}")
 
-# plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=clr, )
+print(type(mDB.components))
+print(len(mDB.components[0]))
+print(f"This is not using the kd_tree")
 
-# plt.show()
+plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=clr, )
+
+plt.show()
 
 print(f"The label for the point in the prediction is: {mDB.predict([2, 3])}")
 print(f"The labels are: {mDB.label}")
 
 
+
+
+
+mDB = MY_DBSCAN_2(.5, 15)
+
+start = time.time()
+
+mDB.fit(X)
+
+end = time.time()
+
+print(f"Program took about {end-start}")
+
+print(type(mDB.components))
+print(len(mDB.components[0]))
+print(f"This is using the kd_tree")
+
+plt.scatter(X[:,0], X[:1], c=mDB.label, cmap=clr)
+
+plt.show()
+
+print(f"The label for the point in the prediction is: {mDB.predict([2, 3])}")
+print(f"The labels are: {mDB.label}")
 
 # using the k means clustering
 # kmeans = KMeans()

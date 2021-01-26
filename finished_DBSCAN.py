@@ -38,7 +38,7 @@ class MY_DBSCAN_2:
         self.__seen = None
 
     
-    def __choose_neighbor_algo(self, algorithm, data):
+    def __choose_neighbor_algo(self, data):
         """
         This is the function that will set the algorithm to be used. This function will 
         instanciate the kd_tree and put the tree value on the attribute self.tree.
@@ -50,17 +50,16 @@ class MY_DBSCAN_2:
 
         Returns the attribute for self.algorithm
         """
-        if algorithm == "auto":
+        if self.algorithm == "auto":
             # calling the function to return if should
             # be a brute or a kd-tree
-            algorithm = self.__brute_kd(data)
-            # choosing making the tree if necessary
-            self.algorithm = algorithm
+            self.algorithm = self.__brute_kd(data)
+                        
 
-            # if is kd will then make the tree
-            if self.algorithm = "kd":
-                # making the tree
-                self.tree = KD_tree(data=data, max_leaf_nodes=self.leaf_size)
+        # if is kd will then make the tree
+        if self.algorithm == "kd_tree":
+            # making the tree
+            self.tree = KD_tree(data=data, max_leaf_nodes=self.leaf_size)
             
 
 
@@ -68,12 +67,12 @@ class MY_DBSCAN_2:
 
     def __brute_kd(self, data):
         """
-        Returns "brute" or "kd"
+        Returns "brute" or "kd_tree"
         Looks at the size of the data to determine which
         type should be done.
         """
         if len(data) > 30:
-            return "kd"
+            return "kd_tree"
         else:
             return "brute"
 
@@ -94,10 +93,10 @@ class MY_DBSCAN_2:
         
         # calling the fuction to determine the algorithm
         # This is used if not "brute"
-        if algorithm == "kd_tree" or algorithm == "auto":
+        if self.algorithm == "kd_tree" or self.algorithm == "auto":
             # calling the function to choose and then set up the
             # kd_tree if necessary
-            self.algorithm = self.__choose_neighbor_algo(algorithm, data)
+            self.algorithm = self.__choose_neighbor_algo(data)
         
         else:
             self.algorithm = algorithm
@@ -135,16 +134,18 @@ class MY_DBSCAN_2:
         # to find those that form a cluster or will 
         # be noise
         neigbors = None
-        # making it so that it can use the kd_tree
-        if self.algorithm == "kd_tree":
 
         for i in range(len(data)):
             if self.algorithm == "kd_tree":
                 # will be doing the kd_tree here to get the neighbors
-
-            # passing in to the find the neighbors for "point"
-            neigbors = self.__findNeighbors(data=data, point=data[i], point_index=i)
+                # finding the neighbor of the point
+                neigbors = self.tree.find_kd_tree_neighbors(eps=self.eps, point=data[i])
             
+            # Using the brute fore manner of finding the neighbors
+            else:    
+                # passing in to the find the neighbors for "point"
+                neigbors = self.__findNeighbors(data=data, point=data[i], point_index=i)
+                
             # adding all the indexes of the the point's neighbors
             self.__neighbors[i] = neigbors # indexes of all the neigbors
             # finding if to label as noise or core

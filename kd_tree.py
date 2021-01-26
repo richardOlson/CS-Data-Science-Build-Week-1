@@ -5,6 +5,7 @@
 from queue import Queue
 from numpy import linalg
 from math import dist
+import numpy as np
 
 class Node:
     def __init__(self, data=None, median=None, median_number=None, side_of_cut=None, parent=None):
@@ -45,9 +46,9 @@ class KD_tree:
         knowlege of the original element index if desired
 
         """
-
+        
         # Making sure the data is the correct form
-        if not isinstance(data, list):
+        if not isinstance(data, (list, np.ndarray)):
             raise Exception("Data is not in correct format, must be a list or list of lists")
 
         
@@ -169,7 +170,7 @@ class KD_tree:
 
 
     def __sort(self, data, axis):
-        
+        breakpoint()
         # making it so that it can use the tuples if necesary to keep the original index
         if self.keep_original_index:
             if self.num_of_axis == 1:
