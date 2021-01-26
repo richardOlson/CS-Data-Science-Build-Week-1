@@ -96,11 +96,9 @@ class MY_DBSCAN_2:
         if self.algorithm == "kd_tree" or self.algorithm == "auto":
             # calling the function to choose and then set up the
             # kd_tree if necessary
-            self.algorithm = self.__choose_neighbor_algo(data)
+            self.__choose_neighbor_algo(data)
         
-        else:
-            self.algorithm = algorithm
-
+        
 
         # the self._neighbors contains the index of the points in the data that are the neighbor
         # indexes neighbors

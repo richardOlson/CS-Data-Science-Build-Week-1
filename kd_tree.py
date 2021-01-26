@@ -24,6 +24,7 @@ class Node:
         self.median_number = median_number
         # The axis cut will be an integer ie: 0, 1, 2.  The 0 means the first axis in the data, 1-- the second ect.
         self.axis_cut = None 
+        
 
 
 class KD_tree:
@@ -63,9 +64,18 @@ class KD_tree:
 
         # Finding the number axis to which cut the data
         self.num_of_axis = len(data[0])
-        
-         
 
+        # getting the attribute for the axis
+        self.axis = 0
+
+        
+        # Data index is the index of the list or the array it is what is sorted and changed
+        # the numpy array or the list is not changed
+        self.data_index = [None] * len(data)
+        self.__make_data_index(data)
+
+        # making the attribute that will hold the data
+        self.data = data
 
         if max_leaf_nodes == None:
             self.max_leaf_nodes = -1
@@ -74,21 +84,13 @@ class KD_tree:
 
         self.keep_original_index = keep_original_index
 
-        if self.keep_original_index:
-            # This is the data that is used when keep_original_index
-            self.data = [None] * len(data)
-            # This is the fucnction that will make the tuple that 
-            # where the first element in the tuple will contain the original index of all the data
-            data = self.__make_tup(data)
-            
-
         #self.max_leaf_nodes = max_leaf_nodes
         # building the tree with making the nodes
-        self.__build(data, at_depth=0, axis=0, curNode=self.head)
-    
+        self.__build(self.data_index, at_depth=0, axis=0, curNode=self.head)
 
+        
 
-    def __build(self, data, at_depth, axis, curNode):
+    def __build(self, data_indices, at_depth, axis, curNode):
         """
         This is the method that will build the 
         tree.  This function  is recursive and will continue to be called
@@ -118,22 +120,24 @@ class KD_tree:
         # when to stop the building of the tree
         # if have reach the required depth or the nodes are 
         # less than the max_leaf_nodes
-        if self.max_leaf_nodes >= len(data) and self.max_leaf_nodes != -1:
+        if self.max_leaf_nodes >= len(data_indices) and self.max_leaf_nodes != -1:
+            # THESE DATA IN THE CUR NODE ARE JUST THE INDEXES TO WHERE THE 
+            # DATA IS FOUND IN THE SELF.DATA 
             # will need to add the data to the current node and then return
-            curNode.data = data # this is a list of the data in the curNode
+            curNode.data = data_indices # this is a list of the data in the curNode
             return  
         if self.depth < at_depth and self.depth != -1:
-            curNode.data = data
+            curNode.data = data_indices
             return
         # checking to see if there are no more to split
-        if len(data) == 1 or len(data) == 0:
-            curNode.data = data
+        if len(data_indices) == 1 or len(data_indices) == 0:
+            curNode.data = data_indices
             return
         
         # below here still building the tree
         
         # will get the median of the data from the dimension --- this returning data sorted
-        median_number ,median, data = self.__get_median(data, axis=axis) 
+        median_number ,median, data_indices = self.__get_median(data_indices, axis=axis) 
         
         # getting the nodes that will be passed in and the current Node set up. 
         curNode.median_number = median_number
@@ -146,43 +150,84 @@ class KD_tree:
 
         # getting the new axis to which do the partitioning
         axis = self.__get_new_axis(axis)
+        self.axis = axis
 
+        if self.axis == None:
+            print("axis is none")
+            breakpoint()
         # doing the split of the data along the median.
         # left side
-        self.__build(data[:median], at_depth=at_depth + 1, axis=axis, curNode=curNode.left)
+        self.__build(data_indices[:median], at_depth=at_depth + 1, axis=axis, curNode=curNode.left)
         # right side
         # the median will go to the right side
-        self.__build(data[median:], at_depth=at_depth+1, axis=axis, curNode=curNode.right) # from the median to the end
+        self.__build(data_indices[median:], at_depth=at_depth+1, axis=axis, curNode=curNode.right) # from the median to the end
         
 
 
+    def __get_data(self, data_indices):
+        """
+        This is the function that will get the data and return it.
+        This function is passed in a list of data indexes that can be used to find the correct elements
+        in the self.data which is either a numpy array or a list
+        """
+        d_list = []
+        for the_index in data_indices:
+            d_list.append(self.data[the_index])
+        return d_list
 
-    def __make_tup(self, data):
+
+    def __make_data_index(self, data):
         """
         This is the function that will make the tuple of the data.
         """
         
         # doing a loop of the data and makin the tuple
         for i in range(len(data)):
-            self.data[i] = (i, data[i])
+            self.data_index[i] = i
         
-        return self.data
+      
 
-
-    def __sort(self, data, axis):
-        breakpoint()
-        # making it so that it can use the tuples if necesary to keep the original index
-        if self.keep_original_index:
+    # This is the funtion that will return the value that needs to be found to do the sorting
+    # This function was buit because we were dealing with an error of 
+    # "The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()"
+    # without using this function
+    def t_key(self,iterable):
+        
+        val = None
+        if isinstance(self.data, np.ndarray):
             if self.num_of_axis == 1:
-                data.sort(key=lambda dataPoint: dataPoint[1])
+                val = self.data.item(iterable)
             else:
-                data.sort(key=lambda dataPoint: dataPoint[1][axis])
-        elif self.num_of_axis ==1:
-            data.sort(key=lambda dataPoint: dataPoint)
+                val = self.data.item((iterable, self.axis))
         else:
-            data.sort(key=lambda dataPoint: dataPoint[axis])
-        return data
+            if self.axis == None:
+                print("It is none")
+                breakpoint()
+            if self.num_of_axis == 1:
+                # the iterable is the data_index to retieve the data
+                val = self.data[iterable]
+            else:
+                val = self.data[iterable][self.axis]
+        
+        return val
 
+
+    def __sort(self, data_indices, axis):
+        
+        # # making it so that it can use the tuples if necesary to keep the original index
+        # if self.keep_original_index:
+        #     if self.num_of_axis == 1:
+        #         data.sort(key=lambda dataPoint: dataPoint[1])
+        #     else:
+        #         data.sort(key=lambda dataPoint: dataPoint[1][axis])
+        # elif self.num_of_axis ==1:
+        #     data.sort(key=lambda dataPoint: dataPoint)
+        # else:
+        #     data.sort(key=lambda dataPoint: dataPoint[axis])
+        # return data
+        # sorting just the data index and leaving the original data alone
+        data_indices.sort(key=self.t_key)
+        return data_indices
 
 
     def __get_new_axis(self, current_axis):
@@ -193,10 +238,11 @@ class KD_tree:
             return current_axis + 1
         else:
             current_axis = 0
+        return current_axis
 
 
 
-    def __get_median(self, data, axis):
+    def __get_median(self, data_indices, axis):
         """
         This function will return the median of the data on the axis 
         that is specified.  If the axis specified doesn't exist, this 
@@ -211,52 +257,47 @@ class KD_tree:
         # also the data that has been sorted
         
 
-        data = self.__sort(data, axis=axis)
+        data_indices = self.__sort(data_indices, axis=axis)
 
-        
+
+        # This is the median element in the data_indices -- so if there 7 elements this is the 4th element
         # now will find the median
-        median_index = len(data) // 2
-
-        # getting the median number
+        data_median_index = len(data_indices)//2
+        # getting the element that will be used to look up the data value in the nd array or the list
+        med = data_indices[data_median_index]
        
-        # making it so that if there is a tuple that it can be used
-        if self.keep_original_index:
 
-            if self.num_of_axis == 1: # that means that is one dimensional, just numbers
-                median_number = data[median_index][1]
-            
-            else:                    
-                median_number = data[median_index][1][axis]
-
-        elif self.num_of_axis == 1: # checking how many dimensions, if true is just a scalar
-            median_number = data[median_index]
-
-        else:
-            median_number = data[median_index][axis]
+        # getting the median number -- from the nd array or the list of values (points)
+        if self.num_of_axis == 1: # that means that is one dimensional, just numbers
+            median_number = self.data[med]
+        
+        else:                    
+            median_number = self.data[med][axis]
 
         # checking what the number below the median if it is the same then we will need to 
         # move the median index down.
         # This is to keep all the points that have the same number on the same side.
         # We will move the index down unless we are at index 0 becuase it can't move any further.
         median_index = self.__move_if_need_median_index(median_number=median_number, 
-                                                        median_index=median_index, data=data)
+                                                        median_index=data_median_index, data_indices=data_indices, axis=axis)
         
         # returning both the data and the median
-        return median_number, median_index, data
+        return median_number, median_index, data_indices
 
 
 
 
-    def __move_if_need_median_index(self, median_number, median_index, data):
+    def __move_if_need_median_index(self, median_number, median_index, data_indices, axis):
         """
         This is the method that will move the index if it is needed to try to make sure that all the numbers
         that are the same remain on the same side.
         """
+        # median_index is the element number for the data_indices list
         while True:
             if median_index == 0:
                 return median_index
             
-            if data[median_index - 1] != median_number:
+            if self.data[data_indices[median_index - 1]][axis] != median_number:
                 return median_index
             
             # shifting down to next element
@@ -324,7 +365,7 @@ class KD_tree:
                 print(f"A cut was performed at this node on the number {curNode.median_number} on the axis of {curNode.axis_cut}")
             if curNode.data != None:
                 # printing out the data that is at the node here -- these are the leaves
-                print(f"At this Node are the leaves (data-points) found -- {curNode.data}")
+                print(f"At this Node are the leaves (data-points) found -- {self.__get_val(curNode.data)}")
             
             # checking to see if the chile Nodes are empty and if they are not then they will be added
             if curNode.left is not None:
@@ -367,7 +408,7 @@ class KD_tree:
         # Here will either store the index of the neigbors or will store the neighbors
         if curNode.data is not None:
             
-            some_neighbors = self.check_data_points_for_neighbors(eps=eps, curNode=curNode, point=point)
+            some_neighbors = self.__check_data_points_for_neighbors(eps=eps, curNode=curNode, point=point)
             return some_neighbors
 
         # need to choose the direction to go to look
@@ -407,7 +448,18 @@ class KD_tree:
             return neighbors
 
         
+    def __get_val(self, data_index):
+        if not isinstance(data_index, list):
+            return self.data[data_index]
+        else:
+            theList = []
 
+            for d in data_index:
+                theList.append(self.data[d])
+            return theList
+        
+        
+        
 
         
 
@@ -415,26 +467,25 @@ class KD_tree:
     # This is the function that will check to see if any of the points are neighbors.
     # This is function will grab either the indices or the data depending on flag
     # of keep_original_index
-    def check_data_points_for_neighbors(self, eps, curNode, point):
+    def __check_data_points_for_neighbors(self, eps, curNode, point):
         neighbor_list = []
         # making it so that if the values are in a list that it will be able to find the 
         # distance
         the_dist = None
         
         for n_pt in curNode.data:
-            # making it to hande when it comes as a tuple 
-            if self.keep_original_index == True:
-                n_pt = n_pt[1]
-           
+            # getting a data point 
+            data_point = self.data[n_pt]
             # checking the instance of the data if it is a instance then the dist will be used
-            if isinstance(n_pt, list):
-                the_dist = dist(point, n_pt)
+            if isinstance(data_point, list):
+                the_dist = dist(point, data_point)
             else:# this one is for the numpy array
                 # using the linagl_norm to find the distance
-                the_dist = linalg.norm(point - n_pt)
+                the_dist = linalg.norm(point - data_point)
             
             if the_dist <= eps:
-                # adding the data points that are neighbors
+                # adding the data points that are neighbors this will just be the element 
+                # number of the data
                 neighbor_list.append(n_pt)
         
         # returning the neigborlist
@@ -446,9 +497,9 @@ class KD_tree:
 
 if __name__ == "__main__":
     # making a data point
-    d = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 4,8], [22, 18, 16]]
+    d = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 85,8], [22, 18, 16]]
     # trying to build the tree
-    tree = KD_tree(data= d, keep_original_index=True)
+    tree = KD_tree(data= d,)
 
     # doing the printing of the tree that has been build
     tree.print_tree()

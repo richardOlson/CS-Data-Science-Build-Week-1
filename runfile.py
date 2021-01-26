@@ -38,7 +38,7 @@ clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
 # # running the second db scan
 
 start = time.time()
-mDB = MY_DBSCAN_2(.5, 15)
+mDB = MY_DBSCAN_2(.5, 6)
 
 mDB.fit(X)
 
@@ -63,7 +63,7 @@ print(f"The labels are: {mDB.label}")
 
 
 
-mDB = MY_DBSCAN_2(.5, 15)
+mDB = MY_DBSCAN_2(.6, 15)
 
 start = time.time()
 
