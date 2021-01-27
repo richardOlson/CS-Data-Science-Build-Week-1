@@ -199,8 +199,7 @@ class MY_DBSCAN_2:
         label_counter = 1 # This is the label for the cluster that is being built
         
         for index in self.core_samples_indices:
-            if index == 31:
-                breakpoint()
+                
             if self.__seen[index] == 0:
                 self.label[index] = label_counter
                 self.__seen[index] = 1
