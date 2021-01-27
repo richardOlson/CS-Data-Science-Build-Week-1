@@ -38,7 +38,7 @@ clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
 # # running the second db scan
 
 start = time.time()
-mDB = MY_DBSCAN_2(.5, 6)
+mDB = MY_DBSCAN_2(eps=.5, minNum=6, algorithm="auto")
 
 mDB.fit(X)
 
@@ -63,26 +63,26 @@ print(f"The labels are: {mDB.label}")
 
 
 
-mDB = MY_DBSCAN_2(.6, 15)
+# mDB = MY_DBSCAN_2(.6, 15)
 
-start = time.time()
+# start = time.time()
 
-mDB.fit(X)
+# mDB.fit(X)
 
-end = time.time()
+# end = time.time()
 
-print(f"Program took about {end-start}")
+# print(f"Program took about {end-start}")
 
-print(type(mDB.components))
-print(len(mDB.components[0]))
-print(f"This is using the kd_tree")
+# print(type(mDB.components))
+# print(len(mDB.components[0]))
+# print(f"This is using the kd_tree")
 
-plt.scatter(X[:,0], X[:1], c=mDB.label, cmap=clr)
+# plt.scatter(X[:,0], X[:1], c=mDB.label, cmap=clr)
 
-plt.show()
+# plt.show()
 
-print(f"The label for the point in the prediction is: {mDB.predict([2, 3])}")
-print(f"The labels are: {mDB.label}")
+# print(f"The label for the point in the prediction is: {mDB.predict([2, 3])}")
+# print(f"The labels are: {mDB.label}")
 
 # using the k means clustering
 # kmeans = KMeans()
@@ -103,5 +103,4 @@ print(f"The labels are: {mDB.label}")
 
 # plt.scatter(X[:,0], X[:,1], c=d.labels_, cmap=clr)
 # plt.show()
-
 

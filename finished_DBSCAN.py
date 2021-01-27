@@ -137,7 +137,7 @@ class MY_DBSCAN_2:
             if self.algorithm == "kd_tree":
                 # will be doing the kd_tree here to get the neighbors
                 # finding the neighbor of the point
-                neigbors = self.tree.find_kd_tree_neighbors(eps=self.eps, point=data[i])
+                neigbors = self.tree.find_kd_tree_neighbors(eps=self.eps, point=data[i], point_index=i)
             
             # Using the brute fore manner of finding the neighbors
             else:    

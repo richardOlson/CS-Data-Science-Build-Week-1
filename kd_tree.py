@@ -74,7 +74,7 @@ class KD_tree:
         self.data_index = [None] * len(data)
         self.__make_data_index(data)
 
-        # making the attribute that will hold the data
+        # making the attribute that will hold the data (the numpy array or the list)
         self.data = data
 
         if max_leaf_nodes == None:
@@ -83,10 +83,13 @@ class KD_tree:
             self.max_leaf_nodes = max_leaf_nodes
 
         self.keep_original_index = keep_original_index
-
-        #self.max_leaf_nodes = max_leaf_nodes
+        # This is to check what the previous index was
+        self.the_prev_index=None
+        
         # building the tree with making the nodes
         self.__build(self.data_index, at_depth=0, axis=0, curNode=self.head)
+        
+        
 
         
 
@@ -116,7 +119,6 @@ class KD_tree:
         axis: this is the current axis that the cut should be done on
         """
 
-        
         # when to stop the building of the tree
         # if have reach the required depth or the nodes are 
         # less than the max_leaf_nodes
@@ -135,9 +137,29 @@ class KD_tree:
             return
         
         # below here still building the tree
-        
+        the_axis = None # this is to check the axis in the check_cut if necessary
         # will get the median of the data from the dimension --- this returning data sorted
-        median_number ,median, data_indices = self.__get_median(data_indices, axis=axis) 
+        median_number ,median, data_indices = self.__get_median(data_indices, axis=axis)
+
+        # need to check if the data_indices and the cut at the median is the same.
+        # If they are then we need to check the rest of the directions axis.  If they end up being the same
+        # we will then do the loop through the rest of the axis and if they remain the same then
+        # the data_indices are all stored as data.
+        if len(data_indices[median:]) == len(self.the_prev_index):
+            med_num, med, d_ind, the_axis = self.__check_cut(data_indices=data_indices, 
+                                                                axis=axis, curNode=curNode)
+
+            if the_axis == None:
+                # if in here then we need to put all the data_indices into data
+                # and then return because was unable to cut the data
+                curNode.data = data_indices
+                return
+            else:
+                median_number = med_num
+                median = med
+                data_indices = d_ind
+                axis = the_axis
+
         
         # getting the nodes that will be passed in and the current Node set up. 
         curNode.median_number = median_number
@@ -150,11 +172,9 @@ class KD_tree:
 
         # getting the new axis to which do the partitioning
         axis = self.__get_new_axis(axis)
-        self.axis = axis
+        
 
-        if self.axis == None:
-            print("axis is none")
-            breakpoint()
+        
         # doing the split of the data along the median.
         # left side
         self.__build(data_indices[:median], at_depth=at_depth + 1, axis=axis, curNode=curNode.left)
@@ -181,7 +201,7 @@ class KD_tree:
         This is the function that will make the tuple of the data.
         """
         
-        # doing a loop of the data and makin the tuple
+        # doing a loop of the data
         for i in range(len(data)):
             self.data_index[i] = i
         
@@ -200,9 +220,7 @@ class KD_tree:
             else:
                 val = self.data.item((iterable, self.axis))
         else:
-            if self.axis == None:
-                print("It is none")
-                breakpoint()
+           
             if self.num_of_axis == 1:
                 # the iterable is the data_index to retieve the data
                 val = self.data[iterable]
@@ -210,10 +228,46 @@ class KD_tree:
                 val = self.data[iterable][self.axis]
         
         return val
+        
 
+
+    def __check_cut(self, data_indices, axis, curNode):
+        """
+        This is the function that will check what to do if the same 
+        data indices comes back twice.  This will mean that one of the axis did not 
+        cut the data. The other axises will be checked until exhausted.  If finding an
+        axis to cut, this function will return all the needed info to do the cut.
+        If no cut was available, this function will signal wether to put the data on the current node
+        or tell which axis to cut on. 
+        """
+        # setting the current axis
+        the_cur_axis = axis
+        # setting the current indices
+        curIndices = data_indices
+        
+        # doing a while loop
+        # dong a sort of the data
+        while True:
+            the_cur_axis = self.__get_new_axis(the_cur_axis)
+            median_number, median, data_indices = self.__get_median(data_indices=data_indices, 
+                                                                            axis=the_cur_axis)
+            if len(data_indices[median:]) != len(data_indices):
+                # if in here then it can be cut along this axis
+                return median_number, median, data_indices, the_cur_axis
+            if axis == the_cur_axis:
+                return None, None, None, None
+        
+        
+        
 
     def __sort(self, data_indices, axis):
+
         
+        # This is setting the prev indices to see if it is the same as the
+        # the previous time.  This will alert the system to check other axis and then decide if 
+        # it will all become leaves because it can't be split.
+        # This is done before doing the splitting of the data
+        self.the_prev_index = data_indices
         # # making it so that it can use the tuples if necesary to keep the original index
         # if self.keep_original_index:
         #     if self.num_of_axis == 1:
@@ -235,10 +289,11 @@ class KD_tree:
         # that will be the next in line
         if current_axis < self.num_of_axis -1:
             # if in here we can just increment the current_axis
-            return current_axis + 1
+            self.axis = current_axis + 1
+            return self.axis
         else:
-            current_axis = 0
-        return current_axis
+            self.axis = 0
+        return self.axis
 
 
 
@@ -379,7 +434,7 @@ class KD_tree:
     # The function below will make it so that it doesn't hopefully need to look at
     # all of the points to find another points neighbors becuase the data will be partitioned in 
     # the tree.
-    def find_kd_tree_neighbors(self, eps, point, curNode=None):
+    def find_kd_tree_neighbors(self, eps, point, point_index=None, curNode=None, return_data=False):
         """
         This is the base function that will be used to search through the kd_tree to find the 
         neighbors of the point that is passed into this function.
@@ -388,6 +443,9 @@ class KD_tree:
         be considered a neighbor.
 
         point:  This is the point that is used to look for its neighbors
+
+        point_index:  When this is added then the function will make sure to not return itself as a neighbor
+        It will return all neigbors who are at the index specified.
         
         Returns:  This function will return a list of all the neighbors of the point that is passed in.
         If "keep_original_index == True" then the list of neighbors will be the indexes of the neighbors
@@ -408,27 +466,30 @@ class KD_tree:
         # Here will either store the index of the neigbors or will store the neighbors
         if curNode.data is not None:
             
-            some_neighbors = self.__check_data_points_for_neighbors(eps=eps, curNode=curNode, point=point)
+            some_neighbors = self.__check_data_points_for_neighbors(eps=eps, curNode=curNode, point=point,
+                                                         point_index=point_index, return_data=return_data)
             return some_neighbors
-
+        
         # need to choose the direction to go to look
         # getting the edge of the radius
         point_number = point[curNode.axis_cut]
         number_above_eps = point_number + eps
         number_below_eps = point_number - eps
-
+        
         # This is for sure should continue in the left side
         # need to check if should go down the right side also
         if point_number < curNode.median_number:
             rightList = [] # getting it so that it can be added to the left list
 
             # Goint down the left side
-            leftList = self.find_kd_tree_neighbors(eps=eps, point=point, curNode=curNode.left)
+            leftList = self.find_kd_tree_neighbors(eps=eps, point=point, point_index=point_index, 
+                                                        curNode=curNode.left, return_data=return_data)
 
             # checking the right side
             if number_above_eps > curNode.median_number:
                 # going down the right side also
-                rightList = self.find_kd_tree_neighbors(eps=eps, point=point, curNode=curNode.right)   
+                rightList = self.find_kd_tree_neighbors(eps=eps, point=point, point_index=point_index, curNode=curNode.right,
+                                                        return_data=return_data)   
             # joining the lists
             neighbors = leftList + rightList
             return neighbors
@@ -439,16 +500,22 @@ class KD_tree:
             # checking if want to use the left side along with the right side
             if number_below_eps < curNode.median_number:
                 # if in here will be going down the left side also
-                leftList = self.find_kd_tree_neighbors(eps=eps, point=point, curNode=curNode.left)
+                leftList = self.find_kd_tree_neighbors(eps=eps, point=point, point_index=point_index, curNode=curNode.left,
+                                                        return_data=return_data)
             
             # going down the right side
-            rightList = self.find_kd_tree_neighbors(eps=eps, point=point, curNode=curNode.right)
+            rightList = self.find_kd_tree_neighbors(eps=eps, point=point, point_index=point_index, curNode=curNode.right,
+                                                    return_data=return_data)
 
             neighbors = leftList + rightList
             return neighbors
 
         
     def __get_val(self, data_index):
+        """
+        data_index are the indexes that you want to get the values for
+        """
+
         if not isinstance(data_index, list):
             return self.data[data_index]
         else:
@@ -467,27 +534,35 @@ class KD_tree:
     # This is the function that will check to see if any of the points are neighbors.
     # This is function will grab either the indices or the data depending on flag
     # of keep_original_index
-    def __check_data_points_for_neighbors(self, eps, curNode, point):
+    def __check_data_points_for_neighbors(self, eps, curNode, point,  point_index, return_data=False):
         neighbor_list = []
         # making it so that if the values are in a list that it will be able to find the 
         # distance
+
+        # If print return_data == True, then will return the data instead of the indexes
         the_dist = None
-        
+        if point_index == None:
+            point_index = -1
         for n_pt in curNode.data:
-            # getting a data point 
-            data_point = self.data[n_pt]
-            # checking the instance of the data if it is a instance then the dist will be used
-            if isinstance(data_point, list):
-                the_dist = dist(point, data_point)
-            else:# this one is for the numpy array
-                # using the linagl_norm to find the distance
-                the_dist = linalg.norm(point - data_point)
-            
-            if the_dist <= eps:
-                # adding the data points that are neighbors this will just be the element 
-                # number of the data
-                neighbor_list.append(n_pt)
-        
+            if point_index == n_pt:
+                continue
+            else:        
+                # getting a data point 
+                data_point = self.data[n_pt]
+                # checking the instance of the data if it is a instance then the dist will be used
+                if isinstance(data_point, list):
+                    the_dist = dist(point, data_point)
+                else:# this one is for the numpy array
+                    # using the linagl_norm to find the distance
+                    
+                    the_dist = linalg.norm(point - data_point)
+                
+                if the_dist <= eps:
+                    # adding the data points that are neighbors this will just be the element 
+                    # number of the data
+                    neighbor_list.append(n_pt)
+        if return_data:
+            return self.__get_val(neighbor_list)
         # returning the neigborlist
         return neighbor_list
 
@@ -497,9 +572,15 @@ class KD_tree:
 
 if __name__ == "__main__":
     # making a data point
-    d = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 85,8], [22, 18, 16]]
+    #d = [[3,4,5], [12, 22, 11], [33, 3, 7], [1,34, 12], [6, 85,8], [22, 18, 16]]
+    d = [
+        [2,3], [4,5], [2,6], [2,1], [10, 1], [4,8], [12, 2], [1,1], [1,2],
+        [5,5], [12, 4], [8,0], [13, 7], [23, 4], [7,3], [12,12], [10, 9],
+        [15,4], [2,16], [2,10], [9, 15], [13, 13], [17, 9], [20, 2], [34, 5],
+        [18, 5], [2, 17], [25, 5], [16, 16], [28, 5], [9, 16], [4, 10]
+    ]
     # trying to build the tree
-    tree = KD_tree(data= d,)
+    tree = KD_tree(data= d,max_leaf_nodes=3)
 
     # doing the printing of the tree that has been build
     tree.print_tree()
@@ -508,17 +589,31 @@ if __name__ == "__main__":
     # now doing the breath traversal print
     tree.print_breadth()
 
-    new_data = [(0,[3,4,5]), (1,[12, 22, 11]), (2,[33, 3, 7]), (3,[1,34, 12]), (4,[6, 4,8]), (5,[22, 18, 16])]
+    # now trying to do the finding of neighbors
+    for i, point in enumerate(d):
+        
+        print(f"For the point {point}, the neighbors with dist of 3 are:")
+        neighbors = tree.find_kd_tree_neighbors(eps=3, point=point, point_index=i, return_data=True)
+        print(*neighbors)
+
+
+    #new_data = [(0,[3,4,5]), (1,[12, 22, 11]), (2,[33, 3, 7]), (3,[1,34, 12]), (4,[6, 4,8]), (5,[22, 18, 16])]
 
     # Trying to find the neighbors of the point that will be passed int
-    theList = tree.find_kd_tree_neighbors(eps=9, point=[5, 7, 8], curNode=tree.head)
+    #theList = tree.find_kd_tree_neighbors(eps=9, point=[5, 7, 8], curNode=tree.head)
 
-    print(f"The neighbors for the point [5,7,8] is {theList}")
+    # print(f"The neighbors for the point [5,7,8] is {theList}")
 
-    print("The following is a loop that will loop through and will show what the distance")
-    print("is for each of the following points in the data with respect to the point")
+    # print("The following is a loop that will loop through and will show what the distance")
+    # print("is for each of the following points in the data with respect to the point")
 
-    for each_point in d:
-        print(f"The distance for {each_point} and [5,7,8] is {dist(each_point, [5,7,8])}")
+    # for each_point in d:
+    #     print(f"The distance for {each_point} and [5,7,8] is {dist(each_point, [5,7,8])}")
+    # breakpoint()
+    # for point in d:
+    #     # finding all the neighbors of each other
+    #     neighbors = tree.find_kd_tree_neighbors(eps=5, point=point, return_data=True)
+        
 
-    
+    #     print(f"This is all the neighbors for the point {point}, \n {neigbors}")
+

@@ -358,5 +358,8 @@ class MY_DBSCAN:
     def ggroups(self):
         return self.__groups
 
-
-    
+if __name__ == "__main__":
+    v = 5
+    f = v
+    f +=1
+    print(f"This is v {v} and this if f {f}")
