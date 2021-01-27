@@ -3,7 +3,7 @@ from kd_tree import KD_tree
     
 class MY_DBSCAN_2:
 
-    def __init__(self, eps, minNum, algorithm="auto", leaf_size=25):
+    def __init__(self, eps, minNum, algorithm="auto", leaf_size=15):
         """
         eps: this is the distance that two points must be equal to or less than to be considered neighbors
 
@@ -22,7 +22,7 @@ class MY_DBSCAN_2:
         self.tree = None
         self.leaf_size = leaf_size
         self.eps = eps
-        self.minNum = minNum
+        self.minNum = minNum -1
         self.label = [] # this will be the labels that are given to the data
 
         self.core_samples_indices =[] # Become a ndarray that will have the indexes of the core 
@@ -197,8 +197,10 @@ class MY_DBSCAN_2:
         # recursive method.
         # Will start the label will count with a counter
         label_counter = 1 # This is the label for the cluster that is being built
-
+        
         for index in self.core_samples_indices:
+            if index == 31:
+                breakpoint()
             if self.__seen[index] == 0:
                 self.label[index] = label_counter
                 self.__seen[index] = 1
@@ -228,3 +230,17 @@ class MY_DBSCAN_2:
             return self.label[theCount]
         else:
             raise Exception("The point doesn't match the fitted data dimensions")
+
+
+    def get_neighbors(self, index):
+        """
+        Function to get the neighbors at the index passed in.
+        """
+        return self.__neighbors[index]
+
+
+    def get_cluster_border_val(self, index):
+        """
+        Function to get wether a value is marked as a cluster or border or noise
+        """
+        return self.__cluster_border_noise[index]

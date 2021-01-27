@@ -2,11 +2,11 @@
 # This implimentation needs to be python 3.8 or greater
 
 # doing an import of a queue
-from queue import Queue
+from queue import Queue, SimpleQueue
 from numpy import linalg
 from math import dist
 import numpy as np
-
+from collections import deque
 class Node:
     def __init__(self, data=None, median=None, median_number=None, side_of_cut=None, parent=None):
         self.data = data
@@ -476,7 +476,9 @@ class KD_tree:
         number_above_eps = point_number + eps
         number_below_eps = point_number - eps
         
-        # This is for sure should continue in the left side
+        # if point[0] > 5.38 and point[0] < 5.40 and point[1] > 1.5 and point[1] < 1.55:
+        #     breakpoint()
+        # # This is for sure should continue in the left side
         # need to check if should go down the right side also
         if point_number < curNode.median_number:
             rightList = [] # getting it so that it can be added to the left list
@@ -486,7 +488,7 @@ class KD_tree:
                                                         curNode=curNode.left, return_data=return_data)
 
             # checking the right side
-            if number_above_eps > curNode.median_number:
+            if number_above_eps >= curNode.median_number:
                 # going down the right side also
                 rightList = self.find_kd_tree_neighbors(eps=eps, point=point, point_index=point_index, curNode=curNode.right,
                                                         return_data=return_data)   
@@ -567,7 +569,53 @@ class KD_tree:
         return neighbor_list
 
 
+    def get_cuts_for_val_index(self, val=None, index=None):
+        """
+        This function will search throught the tree and will return the cuts on which axis and also where the 
+        median was for the cuts to reach the number reqested. Can enter
+        in a value or the index.
+        """
+        the_queue = deque()
+        # setting up the inner function
+        val = self.__inner_get_cuts_val(curNode=self.head, val=val, index=index, the_queue=the_queue)
 
+        if val == 1:
+            # need to pring the cuts for the tree
+
+
+    def __inner_get_cuts_val(curNode, val, index, the_queue):
+        if curNode.data != None:
+            if val != None:
+                theList = self.__get_val(curNode.data)
+                if val in theList:
+                    the_queue.appendleft(theList, curNode.side_of_cut))
+                else:
+                    return 0
+            else:
+                if index in  curNode.data:
+                    the_queue.appendleft((curNode.data, curNode.side_of_cut))
+                    return 1
+                else:
+                    return 0
+        if curNode.left and curNode.right == None:
+            return 0
+        # doing the recursive part of the function
+        val = self.__inner_get_cuts_val(curNode.left, val=val, index=index, the_queue=the_queue)
+        if val == 0:
+            # remove the last thing put into the_queue
+            the_queue.popleft()
+            # now trying the right side of the tree
+            val = self.__inner_get_cuts_val(curNode.right, val=val, index=index, the_queue=the_queue)
+
+            if val == 0:
+                the_queue.popleft()
+                return 0
+            else:
+                the_queue.appendleft((curNode.median_number, curNode.median, curNode.axis_cut, curNode.side_of_cut))
+                return 1
+        else:
+            the_queue.appendleft((curNode.median_number, curNode.median, curNode.axis_cut, curNode.side_of_cut))
+            return 1
 
 
 if __name__ == "__main__":

@@ -12,14 +12,23 @@ import time
 
 
 # making a blob
-X, y = make_blobs(n_samples=2000, centers=15, n_features=2, random_state=49)
+# X, y = make_blobs(n_samples=2000, centers=15, n_features=2, random_state=49)
 
-fig , ax = plt.subplots(figsize=(10,10))
+# fig , ax = plt.subplots(figsize=(10,10))
 
-Mcolors = ["grey",  "blue", "red","black",  "violet", "green", "orange", "hotpink", "brown", "yellow", "purple",]
+# Mcolors = ["grey",  "blue", "red","black",  "violet", "green", "orange", "hotpink", "brown", "yellow", "purple", "magenta",]
+
+# clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
+
+
+# making a blob
+X, y = make_blobs(n_samples=45, centers=6, n_features=2, random_state=49)
+
+fig , ax = plt.subplots(figsize=(5,5))
+
+Mcolors = ["grey",  "blue", "red","black",  "violet", "green", "orange", "hotpink", "brown", "yellow", "purple", "magenta",]
 
 clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
-
 # instanciating the DBSCAN
 # start = time.time()
 # mDB = MY_DBSCAN(.5, 15)
@@ -38,7 +47,7 @@ clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
 # # running the second db scan
 
 start = time.time()
-mDB = MY_DBSCAN_2(eps=.5, minNum=6, algorithm="auto")
+mDB = MY_DBSCAN_2(eps=1.1, minNum=3, algorithm="auto", )
 
 mDB.fit(X)
 
@@ -48,8 +57,8 @@ end = time.time()
 
 print(f"Program took about {end - start}")
 
-print(type(mDB.components))
-print(len(mDB.components[0]))
+# print(type(mDB.components))
+print(mDB.components)
 print(f"This is not using the kd_tree")
 
 plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=clr, )
