@@ -12,14 +12,23 @@ import time
 
 
 # making a blob
+# X, y = make_blobs(n_samples=2000, centers=15, n_features=2, random_state=49)
+
+# fig , ax = plt.subplots(figsize=(10,10))
+
+# Mcolors = ["grey",  "blue", "red","black",  "violet", "green", "orange", "hotpink", "brown", "yellow", "purple", "magenta",]
+
+# clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
+
+
+# making a blob
 X, y = make_blobs(n_samples=2000, centers=15, n_features=2, random_state=49)
 
 fig , ax = plt.subplots(figsize=(10,10))
 
-Mcolors = ["grey",  "blue", "red","black",  "violet", "green", "orange", "hotpink", "brown", "yellow", "purple",]
+Mcolors = ["aqua",  "blue", "red","black",  "violet", "green", "orange", "hotpink", "brown", "yellow", "purple", "grey" ,]
 
 clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
-
 # instanciating the DBSCAN
 # start = time.time()
 # mDB = MY_DBSCAN(.5, 15)
@@ -38,26 +47,51 @@ clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
 # # running the second db scan
 
 start = time.time()
-mDB = MY_DBSCAN_2(.5, 15)
+mDB = MY_DBSCAN_2(eps=.5, minNum=15, algorithm="auto", )
 
 mDB.fit(X)
 
 
 
 end = time.time()
-# print(f"Program took about {end - start}")
+
+print(f"Program took about {end - start}")
 
 # print(type(mDB.components))
-# print(len(mDB.components[0]))
+print(mDB.components)
+print(f"This is not using the kd_tree")
 
-# plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=clr, )
+plt.scatter(X[:,0], X[:, 1], c=mDB.label, cmap=clr, )
 
-# plt.show()
+plt.show()
 
 print(f"The label for the point in the prediction is: {mDB.predict([2, 3])}")
 print(f"The labels are: {mDB.label}")
 
 
+
+
+
+# mDB = MY_DBSCAN_2(.6, 15)
+
+# start = time.time()
+
+# mDB.fit(X)
+
+# end = time.time()
+
+# print(f"Program took about {end-start}")
+
+# print(type(mDB.components))
+# print(len(mDB.components[0]))
+# print(f"This is using the kd_tree")
+
+# plt.scatter(X[:,0], X[:1], c=mDB.label, cmap=clr)
+
+# plt.show()
+
+# print(f"The label for the point in the prediction is: {mDB.predict([2, 3])}")
+# print(f"The labels are: {mDB.label}")
 
 # using the k means clustering
 # kmeans = KMeans()
@@ -78,5 +112,4 @@ print(f"The labels are: {mDB.label}")
 
 # plt.scatter(X[:,0], X[:,1], c=d.labels_, cmap=clr)
 # plt.show()
-
 
