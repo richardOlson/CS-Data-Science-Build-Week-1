@@ -22,11 +22,11 @@ import time
 
 
 # making a blob
-X, y = make_blobs(n_samples=1000, centers=50, n_features=2, random_state=49)
+X, y = make_blobs(n_samples=2000, centers=15, n_features=2, random_state=49)
 
-fig , ax = plt.subplots(figsize=(15,15))
+fig , ax = plt.subplots(figsize=(10,10))
 
-Mcolors = ["grey",  "blue", "red","black",  "violet", "green", "orange", "hotpink", "brown", "yellow", "purple", "magenta",]
+Mcolors = ["aqua",  "blue", "red","black",  "violet", "green", "orange", "hotpink", "brown", "yellow", "purple", "grey" ,]
 
 clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
 # instanciating the DBSCAN
@@ -47,7 +47,7 @@ clr = matplotlib.colors.LinearSegmentedColormap.from_list("", Mcolors)
 # # running the second db scan
 
 start = time.time()
-mDB = MY_DBSCAN_2(eps=.5, minNum=10, algorithm="auto", )
+mDB = MY_DBSCAN_2(eps=.5, minNum=15, algorithm="auto", )
 
 mDB.fit(X)
 
