@@ -1,3 +1,8 @@
+This repository contains my implementation of the algorithm DBSCAN.  I made two versions of the algorithm,
+one which was very much a brute force method.  This is found in the file called first_dbscan.py.  
+The second one found in the file finished_DBSCAN.py is the version I used in the blog.
+My implementation of the tree is found in the file kd_tree.py
+
 ## My Blog on medium is found [here](https://medium.com/@Richard_Olson/dbscan-writing-my-own-algorithm-7b79c9b5e843)
 
 # CS Build Week I for Data Science Students
